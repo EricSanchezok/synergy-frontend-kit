@@ -22,24 +22,27 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Map of destination skill name → "repo_url::source_path_in_repo"
-declare -A SOURCES=(
-  ["frontend-design"]="https://github.com/anthropics/skills.git::skills/frontend-design/SKILL.md"
-  ["taste-frontend"]="https://github.com/Leonxlnx/taste-skill.git::skills/taste-skill/SKILL.md"
-  ["color-expert"]="https://github.com/meodai/skill.color-expert.git::SKILL.md"
-  ["typography"]="https://github.com/petekp/agent-skills.git::skills/typography/SKILL.md"
-  ["motion-design"]="https://github.com/LottieFiles/motion-design-skill.git::skills/motion-design/SKILL.md"
-  ["a11y-audit"]="https://github.com/snapsynapse/skill-a11y-audit.git::a11y-audit/SKILL.md"
-  ["soft-design"]="https://github.com/Leonxlnx/taste-skill.git::skills/soft-skill/SKILL.md"
-  ["minimalist-design"]="https://github.com/Leonxlnx/taste-skill.git::skills/minimalist-skill/SKILL.md"
+# Two parallel arrays: skill name and "repo_url::source_path_in_repo"
+SKILLS=(
+  "frontend-design::https://github.com/anthropics/skills.git::skills/frontend-design/SKILL.md"
+  "taste-frontend::https://github.com/Leonxlnx/taste-skill.git::skills/taste-skill/SKILL.md"
+  "color-expert::https://github.com/meodai/skill.color-expert.git::SKILL.md"
+  "typography::https://github.com/petekp/agent-skills.git::skills/typography/SKILL.md"
+  "motion-design::https://github.com/LottieFiles/motion-design-skill.git::skills/motion-design/SKILL.md"
+  "a11y-audit::https://github.com/snapsynapse/skill-a11y-audit.git::a11y-audit/SKILL.md"
+  "soft-design::https://github.com/Leonxlnx/taste-skill.git::skills/soft-skill/SKILL.md"
+  "minimalist-design::https://github.com/Leonxlnx/taste-skill.git::skills/minimalist-skill/SKILL.md"
 )
 
 updated_count=0
 unchanged_count=0
 failed_count=0
 
-for skill in "${!SOURCES[@]}"; do
-  IFS="::" read -r repo filepath <<< "${SOURCES[$skill]}"
+for entry in "${SKILLS[@]}"; do
+  skill="${entry%%::*}"
+  rest="${entry#*::}"
+  repo="${rest%%::*}"
+  filepath="${rest#*::}"
   repo_name=$(basename "$repo" .git)
   repo_dir="$TEMP_DIR/$repo_name"
 
@@ -50,7 +53,7 @@ for skill in "${!SOURCES[@]}"; do
   else
     git clone --depth 1 --quiet "$repo" "$repo_dir" 2>/dev/null || {
       echo "  ✘ Failed to clone $repo"
-      ((failed_count++))
+      failed_count=$((failed_count + 1))
       continue
     }
   fi
@@ -61,27 +64,27 @@ for skill in "${!SOURCES[@]}"; do
   if [[ ! -f "$src" ]]; then
     echo "  ✘ Source not found: $filepath"
     echo "     Expected at: $src"
-    ((failed_count++))
+    failed_count=$((failed_count + 1))
     continue
   fi
 
   if $DRY_RUN; then
     if diff -q "$dest" "$src" &>/dev/null; then
       $QUIET || echo "  (no changes)"
-      ((unchanged_count++))
+      unchanged_count=$((unchanged_count + 1))
     else
       echo "  (would update)"
       diff --unified=2 "$dest" "$src" || true
-      ((updated_count++))
+      updated_count=$((updated_count + 1))
     fi
   else
     if diff -q "$dest" "$src" &>/dev/null; then
       $QUIET || echo "  (already up to date)"
-      ((unchanged_count++))
+      unchanged_count=$((unchanged_count + 1))
     else
       cp "$src" "$dest"
       echo "  ✓ Updated"
-      ((updated_count++))
+      updated_count=$((updated_count + 1))
     fi
   fi
 done
