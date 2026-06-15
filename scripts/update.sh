@@ -1,8 +1,7 @@
+#!/usr/bin/env bash
 # Maintainer tool — syncs bundled SKILL.md files with upstream source repositories.
 # Not exposed to end users. Run this locally, then commit and release a new version.
 # Usage: bash scripts/update.sh [--dry-run]
-
-#!/usr/bin/env bash
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -89,6 +88,7 @@ if $DRY_RUN; then
   echo "Run without --dry-run to apply updates."
 else
   echo "Summary: $updated_count updated, $unchanged_count unchanged, $failed_count failed"
+  if [[ $updated_count -gt 0 ]]; then
     echo "Skills updated. Commit the changes and release a new version."
     echo "Users upgrade via: synergy plugin update frontend-kit"
   fi
