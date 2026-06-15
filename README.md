@@ -32,7 +32,7 @@ When installed, Synergy agents gain:
 
 ```bash
 # Install the plugin
-synergy plugin add niexiaohang/synergy-frontend-kit
+synergy plugin add EricSanchezok/synergy-frontend-kit
 
 # Initialize tooling in your project
 synergy frontend-kit setup

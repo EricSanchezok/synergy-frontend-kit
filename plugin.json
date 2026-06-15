@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Professional frontend design capabilities for Synergy agents — design methodology skills, shadcn/ui component access, layout enforcement, and visual verification.",
   "author": "Synergy Community",
-  "repository": "https://github.com/niexiaohang/synergy-frontend-kit",
+  "repository": "https://github.com/EricSanchezok/synergy-frontend-kit",
   "license": "MIT",
   "keywords": ["frontend", "design", "ui", "tailwind", "shadcn", "react"],
   "icon": "🎨",
