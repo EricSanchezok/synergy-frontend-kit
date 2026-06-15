@@ -26,8 +26,7 @@
       "playwright": { "type": "local", "command": ["npx", "-y", "@playwright/mcp@latest"], "description": "Browser automation for visual verification and screenshots" }
     },
     "commands": [
-      { "name": "setup", "description": "Initialize frontend tooling in the current project (shadcn/ui, layout.design, Playwright)" },
-      { "name": "update", "description": "Sync bundled skills with upstream source repositories" }
+      { "name": "setup", "description": "Initialize frontend tooling in the current project (shadcn/ui, layout.design, Playwright)" }
     ],
     "config": {
       "schema": {
@@ -52,5 +51,4 @@
       }
     }
   },
-  "lifecycle": { "update": "./scripts/update.sh" }
 }

@@ -6,10 +6,6 @@ interface SetupArgs {
   "skip-playwright"?: boolean
 }
 
-interface UpdateArgs {
-  "dry-run"?: boolean
-}
-
 async function execStep(
   ctx: PluginInput,
   label: string,
@@ -91,33 +87,10 @@ export function setupCommand(ctx: PluginInput): PluginCLICommand {
       lines.push("  • Customize design tokens:  edit .layout/kit.json")
       lines.push("  • The frontend-designer agent is now available — try delegating a UI task!")
       lines.push("")
-      lines.push("Tip: run 'synergy frontend-kit update' to sync skills with upstream repos.")
+      lines.push("Tip: run 'synergy plugin update frontend-kit' to upgrade to the latest version.")
       lines.push("─────────────────────────────────────")
 
       return lines.join("\n")
-    },
-  }
-}
-
-export function updateCommand(ctx: PluginInput): PluginCLICommand {
-  return {
-    description: "Sync bundled design skills with upstream source repositories",
-    options: {
-      "dry-run": {
-        type: "boolean",
-        description: "Preview which skills would be updated without applying changes",
-      },
-    } as const,
-    async execute(args: UpdateArgs) {
-      const scriptPath = `${ctx.pluginDir}/scripts/update.sh`
-      const flags = args["dry-run"] ? "--dry-run" : ""
-
-      try {
-        const result = await ctx.$`bash ${scriptPath} ${flags}`.text()
-        return result
-      } catch (err) {
-        return `✗ Update failed: ${err instanceof Error ? err.message : String(err)}\nMake sure scripts/update.sh exists and is executable.`
-      }
     },
   }
 }

@@ -41,20 +41,13 @@ synergy frontend-kit setup
 # The frontend-designer agent is now available via delegation
 ```
 
-## Keeping Skills Updated
+## Upgrading
+
+Skill content is bundled with the plugin. When upstream skills are updated, we release a new plugin version. Upgrade to get the latest:
 
 ```bash
-# See what would change
-synergy frontend-kit update --dry-run
-
-# Apply updates
-synergy frontend-kit update
-
-# Or run directly
-bash scripts/update.sh
+synergy plugin update frontend-kit
 ```
-
-> **Note:** After updating skills, reload Synergy with `runtime_reload(target: "skill")` to pick up the changes.
 
 ## Configuration
 
@@ -90,7 +83,19 @@ In your `synergy.jsonc`:
 
 This plugin runs `npx` with `@latest` tags for MCP servers and setup commands. Before installing, review the supply chain of these npm packages: `shadcn`, `@playwright/mcp`, `@layoutdesign/context`. Consider pinning versions in your own MCP configuration if you need reproducibility guarantees.
 
-The `update.sh` script clones from external Git repositories (`anthropics/skills`, `Leonxlnx/taste-skill`) to sync skill content. These are trusted community projects, but the script only copies markdown files — no executable code is pulled from upstream.
+## For Maintainers
+
+To sync bundled skills with upstream repositories:
+
+```bash
+# Preview changes
+bash scripts/update.sh --dry-run
+
+# Apply updates
+bash scripts/update.sh
+```
+
+This clones from `anthropics/skills` and `Leonxlnx/taste-skill`, diffs each SKILL.md, and copies updates into `skills/`. After syncing, commit and release a new version. Users upgrade via `synergy plugin update frontend-kit`.
 
 ## License
 

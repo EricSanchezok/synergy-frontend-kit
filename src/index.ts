@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import type { Plugin } from "@ericsanchezok/synergy-plugin"
-import { setupCommand, updateCommand } from "./setup"
+import { setupCommand } from "./setup"
 
 function loadAgentPrompt(pluginDir: string): string {
   const filePath = `${pluginDir}/agents/frontend-designer.md`
@@ -60,7 +60,6 @@ export const FrontendKitPlugin: Plugin = {
 
       cli: {
         setup: setupCommand(ctx),
-        update: updateCommand(ctx),
       },
 
       async config(config: unknown) {
