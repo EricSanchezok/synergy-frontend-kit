@@ -35,6 +35,24 @@ export const FrontendKitPlugin: Plugin = {
           dir: "skills/taste-frontend",
         },
         {
+          name: "color-expert",
+          description:
+            "Use when working with color naming, color theory, color spaces, color definitions, or any task involving color knowledge - palettes, ramps, gradients, conversions, accessibility, perceptual matching, pigment mixing, print-vs-screen color, CSS color syntax, or historical color terminology. Triggers: 'color', 'palette', 'OKLCH', 'contrast', 'CSS color'.",
+          dir: "skills/color-expert",
+        },
+        {
+          name: "typography",
+          description:
+            "Apply professional typography principles to create readable, hierarchical, and aesthetically refined interfaces. Use when setting type scales, choosing fonts, adjusting spacing, designing text-heavy layouts, implementing dark mode typography, or when asked about readability, font pairing, line height, measure, typographic hierarchy, variable fonts, font loading, or OpenType features. Triggers: 'typography', 'font', 'type scale', 'font pairing', 'readability', 'line height'.",
+          dir: "skills/typography",
+        },
+        {
+          name: "motion-design",
+          description:
+            "Applies motion design principles to create emotionally-driven, technically sound animations and transitions. Provides timing, easing, choreography, and Disney animation principles adapted for UI. Use when creating animations, transitions, micro-interactions, loading states, page transitions, scroll-triggered effects, or any motion work. Triggers: 'animation', 'motion', 'transition', 'easing', 'micro-interaction', 'loading state'.",
+          dir: "skills/motion-design",
+        },
+        {
           name: "soft-design",
           description:
             "Taste soft-skill: design language for gentle, approachable interfaces. Rounded corners, soft shadows, warm palettes, generous whitespace.",
@@ -57,6 +75,12 @@ export const FrontendKitPlugin: Plugin = {
           description:
             "24 deterministic anti-slop coding rules to prevent AI-generated frontend anti-patterns. Covers color, typography, layout, motion, and accessibility. Standing orders for all frontend code. Triggers: 'CSS', 'style', 'component', 'layout', 'Tailwind', 'animation', 'font', 'color', 'spacing', 'accessibility'.",
           dir: "skills/implementation-rules",
+        },
+        {
+          name: "a11y-audit",
+          description:
+            "Run accessibility audits on web projects combining automated scanning (axe-core, Lighthouse) with WCAG 2.1 AA compliance mapping, manual check guidance, and structured reporting. Triggers: 'accessibility audit', 'a11y audit', 'WCAG audit', 'accessibility check', 'compliance scan'.",
+          dir: "skills/a11y-audit",
         },
       ],
 
