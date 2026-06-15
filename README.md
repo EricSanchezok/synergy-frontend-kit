@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/synergy-%E2%89%A51.1.26-6366f1" alt="Synergy">
+  <img src="https://img.shields.io/badge/synergy-%E2%89%A52.1.4-6366f1" alt="Synergy">
   <img src="https://img.shields.io/badge/bun-%E2%89%A51.2.0-f9f5e9" alt="Bun">
   <img src="https://img.shields.io/badge/license-MIT-22c55e" alt="License">
   <img src="https://img.shields.io/badge/skills-6-8b5cf6" alt="Skills">
@@ -32,7 +32,7 @@ This plugin gives Synergy agents **taste**. It doesn't just tell them to "make i
 
 ### Design Skills
 
-**6 methodology and execution skills** injected into every session. Anthropic's `frontend-design` teaches planning-first, atomic refinement. Taste Skill v2 adds systematic design sensibility. Two style variants (`soft-design`, `minimalist-design`) for different tones. `implementation-rules` enforces 24 deterministic anti-slop coding rules. `project-init` teaches the agent to self-diagnose and auto-initialize missing tooling.
+**6 methodology and execution skills** injected into every session — from high-level design thinking down to concrete coding rules. The agent auto-detects missing tooling and initializes it before starting work.
 
 </td>
 </tr>
@@ -42,7 +42,7 @@ This plugin gives Synergy agents **taste**. It doesn't just tell them to "make i
 
 ### Specialist Agent
 
-`frontend-designer` is a **subagent** that owns visual decisions end-to-end. It follows a 7-step process (analyze → choose direction → plan hierarchy → structure → typography → color → polish), knows exactly which anti-patterns to avoid, and delivers a self-review checklist before declaring done. Not a generalist that happens to write CSS — a designer that also writes code.
+`frontend-designer` is a **subagent** that owns visual decisions end-to-end. It follows a 7-step process (analyze → choose direction → plan hierarchy → structure → typography → color → polish), knows exactly which anti-patterns to avoid, and delivers a self-review checklist before declaring done.
 
 </td>
 </tr>
@@ -66,13 +66,15 @@ Three servers, auto-started on plugin load, zero config needed:
 <td width="80" align="center" valign="top"><br>⚡<br><br></td>
 <td>
 
-### One-Command Setup
+### One-Command Install
 
 ```bash
-synergy frontend-kit setup
+synergy plugin add EricSanchezok/synergy-frontend-kit
 ```
 
-That's it. Initializes shadcn/ui, layout.design, and Playwright in your project. Each step individually guarded — one failure doesn't block the others.
+That's it. Skills load automatically. The `frontend-designer` agent is available for delegation. MCP servers start on plugin load. The agent self-diagnoses and initializes missing project tooling on its first design task.
+
+> **Note:** MCP servers contributed by plugins require a server restart after the first install (Synergy-core limitation — tracked for fix).
 
 </td>
 </tr>
@@ -85,16 +87,6 @@ That's it. Initializes shadcn/ui, layout.design, and Playwright in your project.
 ```bash
 synergy plugin add EricSanchezok/synergy-frontend-kit
 ```
-
-Then initialize your project:
-
-```bash
-synergy frontend-kit setup
-```
-
-Skills load automatically. The `frontend-designer` agent is available for delegation. MCP servers start on plugin load.
-
-> **Note:** MCP servers contributed by plugins require a server restart after the first install. This is a known Synergy-core limitation.
 
 ### Upgrade
 
@@ -113,9 +105,23 @@ synergy plugin update frontend-kit
 | **project-init** | [Synergy](https://github.com/EricSanchezok/synergy-frontend-kit) | Self-diagnose and auto-initialize MCP tooling before design work | 62 |
 | **frontend-design** | [Anthropic](https://github.com/anthropics/skills) | Design methodology: plan-before-code, declarative-first, atomic refinement | 55 |
 | **taste-frontend** | [Taste Skill v2](https://github.com/Leonxlnx/taste-skill) | Design system: typography scales, spacing grids, color theory, visual hierarchy | 1,206 |
-| **implementation-rules** | [Synergy](https://github.com/EricSanchezok/synergy-frontend-kit) | 24 anti-slop coding rules: color, typography, layout, motion, accessibility | 50 |
+| **implementation-rules** | [Synergy](https://github.com/EricSanchezok/synergy-frontend-kit) | 24 anti-slop coding rules extracted from [Impeccable](https://github.com/pbakaus/impeccable) | 50 |
 | **soft-design** | [Taste Skill](https://github.com/Leonxlnx/taste-skill) | Premium, gentle interfaces — rounded corners, soft shadows, warm palettes, generous whitespace | 98 |
 | **minimalist-design** | [Taste Skill](https://github.com/Leonxlnx/taste-skill) | Reductive design — essential elements only, negative space as a feature, typography-driven layouts | 85 |
+
+---
+
+## Credits
+
+Skills are sourced and adapted from community projects:
+
+| Upstream Project | License | What we include |
+|-----------------|---------|----------------|
+| [Anthropic Skills](https://github.com/anthropics/skills) | Apache 2.0 | `frontend-design` SKILL.md |
+| [Taste Skill](https://github.com/Leonxlnx/taste-skill) | MIT | `taste-frontend`, `soft-design`, `minimalist-design` SKILL.md |
+| [Impeccable](https://github.com/pbakaus/impeccable) | MIT | 24 anti-slop rules extracted into `implementation-rules` |
+
+`project-init` and `frontend-designer` are original to this project.
 
 ---
 
@@ -128,12 +134,12 @@ Disable specific skills or MCP servers in your `synergy.jsonc`:
   "pluginConfig": {
     "frontend-kit": {
       "enabledSkills": [
+        "project-init",
         "frontend-design",
         "taste-frontend",
+        "implementation-rules",
         "soft-design",
-        "minimalist-design",
-        "project-init",
-        "implementation-rules"
+        "minimalist-design"
       ],
       "mcp": {
         "shadcn": true,
@@ -221,7 +227,7 @@ Then commit, tag, and release. Users upgrade via `synergy plugin update frontend
 
 ## Requirements
 
-- Synergy ≥ 1.1.26
+- Synergy ≥ 2.1.4
 - Bun ≥ 1.2.0
 - Node.js (for `npx` MCP servers)
 
