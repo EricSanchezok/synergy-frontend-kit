@@ -85,7 +85,6 @@ export function setupCommand(ctx: PluginInput): PluginCLICommand {
       lines.push("Next steps:")
       lines.push("  • Add shadcn components:    npx shadcn@latest add button card dialog")
       lines.push("  • Customize design tokens:  edit .layout/kit.json")
-      lines.push("  • The frontend-designer agent is now available — try delegating a UI task!")
       lines.push("")
       lines.push("Tip: run 'synergy plugin update synergy-frontend-kit' to upgrade to the latest version.")
       lines.push("─────────────────────────────────────")

@@ -23,9 +23,7 @@
       { "name": "soft-design", "description": "Taste soft-skill: design language for gentle, approachable interfaces. Rounded corners, soft shadows, warm palettes, generous whitespace.", "dir": "skills/soft-design" },
       { "name": "minimalist-design", "description": "Taste minimalist-skill: reductive design principles. Essential elements only, negative space as a feature, typography-driven layouts.", "dir": "skills/minimalist-design" }
     ],
-    "agents": [
-      { "name": "frontend-designer", "description": "Frontend design specialist. Produces visually polished, accessible UIs using React, Tailwind CSS, and shadcn/ui. Applies design methodology from loaded skills.", "mode": "subagent" }
-    ],
+    "agents": [],
     "mcp": {
       "shadcn": { "type": "local", "command": ["npx", "-y", "shadcn@latest", "mcp"], "description": "shadcn/ui component registry and code generation" },
       "layout-context": { "type": "local", "command": ["npx", "-y", "@layoutdesign/context", "serve"], "description": "Design system enforcement and layout context" },
@@ -36,12 +34,6 @@
     ],
     "config": {
       "schema": {
-        "enabledSkills": {
-          "type": "array",
-          "items": { "type": "string", "enum": ["project-init", "frontend-design", "taste-frontend", "color-expert", "typography", "motion-design", "implementation-rules", "a11y-audit", "soft-design", "minimalist-design"] },
-          "default": ["project-init", "frontend-design", "taste-frontend", "color-expert", "typography", "motion-design", "implementation-rules", "a11y-audit", "soft-design", "minimalist-design"],
-          "description": "Which design skills to enable"
-        },
         "mcp": {
           "type": "object",
           "properties": {
@@ -52,7 +44,6 @@
         }
       },
       "defaults": {
-        "enabledSkills": ["project-init", "frontend-design", "taste-frontend", "color-expert", "typography", "motion-design", "implementation-rules", "a11y-audit", "soft-design", "minimalist-design"],
         "mcp": { "shadcn": true, "layoutContext": true, "playwright": true }
       }
     }

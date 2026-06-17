@@ -9,7 +9,7 @@
 <br>
 
 <p align="center">
-  <b>Design skills, a specialist agent, and a verified MCP stack —</b><br>
+  <b>Design skills and a verified MCP stack —</b><br>
   <b>everything Synergy needs to build frontend that doesn't look AI-generated.</b>
 </p>
 
@@ -32,17 +32,7 @@ This plugin gives Synergy agents **taste**. It doesn't just tell them to "make i
 
 ### Design Skills
 
-**10 methodology and execution skills** injected into every session — from high-level design thinking down to concrete coding rules. The agent auto-detects missing tooling and initializes it before starting work.
-
-</td>
-</tr>
-<tr>
-<td width="80" align="center" valign="top"><br>🤖<br><br></td>
-<td>
-
-### Specialist Agent
-
-`frontend-designer` is a **subagent** that owns visual decisions end-to-end. It follows a 7-step process (analyze → choose direction → plan hierarchy → structure → typography → color → polish), knows exactly which anti-patterns to avoid, and delivers a self-review checklist before declaring done.
+**10 methodology and execution skills** available on-demand via the <code>skill()</code> tool — from high-level design thinking down to concrete coding rules. The agent calls a skill when it needs specialized expertise.
 
 </td>
 </tr>
@@ -72,7 +62,7 @@ Three servers, auto-started on plugin load, zero config needed:
 synergy plugin add github:EricSanchezok/synergy-frontend-kit
 ```
 
-That's it. Skills load automatically. The `frontend-designer` agent is available for delegation. MCP servers start on plugin load. The agent self-diagnoses and initializes missing project tooling on its first design task.
+That's it. Skills are available on-demand via the `skill()` tool. MCP servers start on plugin load. The agent self-diagnoses and initializes missing project tooling on its first design task.
 
 > **Note:** MCP servers contributed by plugins require a server restart after the first install (Synergy-core limitation — tracked for fix).
 
@@ -129,7 +119,7 @@ Skills are sourced and adapted from community projects:
 | [LottieFiles/motion-design-skill](https://github.com/LottieFiles/motion-design-skill) | MIT | `motion-design` SKILL.md |
 | [snapsynapse/skill-a11y-audit](https://github.com/snapsynapse/skill-a11y-audit) | MIT | `a11y-audit` SKILL.md |
 
-`project-init` and `frontend-designer` are original to this project.
+`project-init` is original to this project.
 
 ---
 
@@ -165,53 +155,22 @@ Disable specific skills or MCP servers in your `synergy.jsonc`:
 
 ---
 
-## How the agent works
-
-The `frontend-designer` subagent follows a strict pipeline:
-
-```
-analyze brief → choose direction → plan hierarchy →
-structure (HTML + Tailwind layout) → typography →
-color (2-3 core, token-first) → polish (2-3 intentional animations)
-```
-
-**Anti-patterns it refuses:**
-- Generic SaaS card grids as the first impression
-- Purple/blue default colors without justification
-- Cards used for layout (cards = interactive containers only)
-- Lorem ipsum placeholder text
-- Abstract gradient hero sections with no visual identity
-- Button-heavy layouts without clear information hierarchy
-- Missing mobile breakpoints
-- Missing loading, empty, and error states
-
-**Quality gates before delivering:**
-- Works at 320px, 768px, 1024px, 1440px
-- All interactives have focus rings
-- Color contrast ≥ 4.5:1 (WCAG AA)
-- Images have alt text, forms have labels
-- No layout shift on load
-- Dark mode considered
-- No console errors
-
----
-
 ## Architecture
 
 ```
 ┌──────────────────────────────────────────────────────┐
 │                    Synergy Runtime                    │
 │                                                      │
-│  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐│
-│  │ Design Skills│  │frontend-     │  │  MCP Stack   ││
-│  │ (10 SKILL.md)│  │designer      │  │  shadcn      ││
-│  │              │  │subagent      │  │  layout-     ││
-│  │ Injected into│  │              │  │  context     ││
-│  │ every session│  │ Delegated for│  │  playwright  ││
-│  │              │  │ design tasks │  │              ││
-│  └──────┬───────┘  └──────┬───────┘  └──────┬──────┘│
-│         │                 │                  │       │
-│         ▼                 ▼                  ▼       │
+│  ┌──────────────────┐            ┌──────────────────┐│
+│  │  Design Skills   │            │    MCP Stack     ││
+│  │  (10 SKILL.md)   │            │  shadcn          ││
+│  │                   │            │  layout-         ││
+│  │  Available on-    │            │  context         ││
+│  │  demand via the   │            │  playwright      ││
+│  │  skill() tool     │            │                  ││
+│  └────────┬──────────┘            └────────┬─────────┘│
+│           │                                │          │
+│           ▼                                ▼          │
 │  ┌─────────────────────────────────────────────────┐ │
 │  │          Agent produces polished UI              │ │
 │  │  → follows design methodology                   │ │

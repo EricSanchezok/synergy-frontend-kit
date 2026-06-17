@@ -89,6 +89,17 @@ for entry in "${SKILLS[@]}"; do
   fi
 done
 
+# Auto-sync skill descriptions into src/index.ts
+$QUIET || echo ""
+$QUIET || echo "→ Syncing skill descriptions to src/index.ts..."
+if $DRY_RUN; then
+  $QUIET || echo "  (would update src/index.ts)"
+else
+  bun run "$SCRIPT_DIR/sync-descriptions.ts" 2>/dev/null || {
+    echo "  ✘ Failed to sync descriptions"
+  }
+fi
+
 echo ""
 if $DRY_RUN; then
   echo "Summary (dry run): $updated_count would update, $unchanged_count unchanged, $failed_count failed"
