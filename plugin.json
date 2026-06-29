@@ -28,7 +28,6 @@
   },
   "permissions": {
     "tools": {
-      "invoke": true,
       "filesystem": "write",
       "network": true,
       "shell": true,
