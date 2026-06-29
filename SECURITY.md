@@ -55,7 +55,7 @@ Review any changed scripts under bundled skill directories before publishing.
 Open a GitHub issue in the official repository:
 
 ```text
-https://github.com/SII-Holos/synergy-frontend-kit/issues
+https://github.com/EricSanchezok/synergy-frontend-kit/issues
 ```
 
-For sensitive reports, contact the SII Holos maintainers privately before publishing exploit details.
+For sensitive reports, contact EricSanchez privately before publishing exploit details.

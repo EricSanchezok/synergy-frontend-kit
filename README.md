@@ -6,7 +6,7 @@ It bundles curated design skills, pinned MCP servers, setup automation, and a sm
 
 ## Requirements
 
-- Synergy `>=2.4.1`
+- Synergy `>=2.4.2`
 - Bun `>=1.2.0`
 - Node.js and `npx` for MCP servers and setup commands
 
@@ -19,12 +19,6 @@ synergy plugin add synergy-frontend-kit
 ```
 
 Direct GitHub installation is useful before the marketplace PR has merged:
-
-```bash
-synergy plugin add github:SII-Holos/synergy-frontend-kit
-```
-
-During migration, the source repository may also be mirrored from:
 
 ```bash
 synergy plugin add github:EricSanchezok/synergy-frontend-kit
@@ -81,12 +75,6 @@ The panel is intentionally read-only: it shows status, commands, versions, and n
 ## Non-Synergy Skill Install
 
 The skills are still usable by other Agent Skills-compatible tools:
-
-```bash
-npx skills add SII-Holos/synergy-frontend-kit --all
-```
-
-During migration:
 
 ```bash
 npx skills add EricSanchezok/synergy-frontend-kit --all
@@ -148,7 +136,7 @@ bun run build:plugin
 bun run pack:plugin
 ```
 
-Plugin authoring commands come from `@ericsanchezok/synergy-plugin-kit >=2.4.1`. Use `synergy-plugin ...` or the package scripts for validation, build, pack, sign, and marketplace publishing. Use the Synergy CLI for runtime install and local registry smoke tests.
+Plugin authoring commands come from `@ericsanchezok/synergy-plugin-kit >=2.4.2`. Use `synergy-plugin ...` or the package scripts for validation, build, pack, sign, and marketplace publishing. Use the Synergy CLI for runtime install and local registry smoke tests.
 
 ## Official Release
 
@@ -158,11 +146,11 @@ The official marketplace path is:
 
 ```bash
 synergy-plugin publish-market \
-  --repo https://github.com/SII-Holos/synergy-frontend-kit \
+  --repo https://github.com/EricSanchezok/synergy-frontend-kit \
   --changelog "Release notes for this version"
 ```
 
-That command validates, builds, packs, signs, uploads or checks GitHub Release assets, writes the `SII-Holos/synergy-plugins` entry, regenerates `registry.json`, validates the registry, and opens or prepares the PR. Because this is an SII official plugin, the registry PR should mark the entry `official: true` and `verified: true` after maintainer review.
+That command validates, builds, packs, signs, uploads or checks GitHub Release assets, writes the `SII-Holos/synergy-plugins` entry, regenerates `registry.json`, validates the registry, and opens or prepares the PR. Because this is an official Synergy plugin, the registry PR should mark the entry `official: true` and `verified: true` after maintainer review.
 
 ## Security
 

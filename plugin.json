@@ -1,10 +1,10 @@
 {
   "name": "synergy-frontend-kit",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Official frontend capability kit for Synergy agents: curated design skills, pinned MCP tooling, setup automation, and design-readiness UI.",
-  "author": "SII Holos",
-  "homepage": "https://github.com/SII-Holos/synergy-frontend-kit",
-  "repository": "https://github.com/SII-Holos/synergy-frontend-kit",
+  "author": "EricSanchez",
+  "homepage": "https://github.com/EricSanchezok/synergy-frontend-kit",
+  "repository": "https://github.com/EricSanchezok/synergy-frontend-kit",
   "license": "MIT",
   "keywords": [
     "synergy-plugin",
@@ -16,15 +16,15 @@
     "accessibility"
   ],
   "icon": "icons/market.svg",
-  "minSynergyVersion": "2.4.1",
+  "minSynergyVersion": "2.4.2",
   "engines": {
-    "synergy": ">=2.4.1",
+    "synergy": ">=2.4.2",
     "bun": ">=1.2.0"
   },
   "main": "./src/index.ts",
   "trust": {
     "requestedTier": "trusted-import",
-    "reason": "Official SII Holos plugin UI with settings and workspace status panels."
+    "reason": "Official Synergy plugin UI with settings and workspace status panels."
   },
   "permissions": {
     "tools": {

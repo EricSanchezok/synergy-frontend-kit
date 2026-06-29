@@ -4,10 +4,10 @@ This document is the maintainer checklist for publishing Synergy Frontend Kit as
 
 ## Prerequisites
 
-- Synergy Plugin Kit `>=2.4.1`
+- Synergy Plugin Kit `>=2.4.2`
 - Bun `>=1.2.0`
 - `gh` authenticated for release uploads and PR creation, or be ready to follow the printed manual fallback commands
-- GitHub write access to `SII-Holos/synergy-frontend-kit`
+- GitHub write access to `EricSanchezok/synergy-frontend-kit`
 - GitHub access to open PRs against `SII-Holos/synergy-plugins`
 - The approved SII release signing key at `~/.synergy/keys/signing-key.json`
 
@@ -51,7 +51,7 @@ bun run release:check
 Inspect the tarball:
 
 ```bash
-tar -tzf synergy-frontend-kit-0.2.1.synergy-plugin.tgz | sort
+tar -tzf synergy-frontend-kit-0.2.2.synergy-plugin.tgz | sort
 ```
 
 Required package files:
@@ -69,7 +69,7 @@ skills/
 
 ```bash
 synergy-plugin publish-market \
-  --repo https://github.com/SII-Holos/synergy-frontend-kit \
+  --repo https://github.com/EricSanchezok/synergy-frontend-kit \
   --changelog "Release notes for this version"
 ```
 
@@ -78,8 +78,8 @@ synergy-plugin publish-market \
 To use a prebuilt tarball instead of rebuilding:
 
 ```bash
-synergy-plugin publish-market synergy-frontend-kit-0.2.1.synergy-plugin.tgz \
-  --repo https://github.com/SII-Holos/synergy-frontend-kit \
+synergy-plugin publish-market synergy-frontend-kit-0.2.2.synergy-plugin.tgz \
+  --repo https://github.com/EricSanchezok/synergy-frontend-kit \
   --changelog "Release notes for this version"
 ```
 
@@ -87,7 +87,7 @@ If you need to inspect or edit the registry change before opening a PR, add `--n
 
 ```bash
 synergy-plugin publish-market \
-  --repo https://github.com/SII-Holos/synergy-frontend-kit \
+  --repo https://github.com/EricSanchezok/synergy-frontend-kit \
   --changelog "Release notes for this version" \
   --no-pr
 ```
@@ -112,33 +112,33 @@ Use this path only when release upload, registry checkout, push, or PR creation 
 Sign the package:
 
 ```bash
-synergy-plugin sign synergy-frontend-kit-0.2.1.synergy-plugin.tgz
+synergy-plugin sign synergy-frontend-kit-0.2.2.synergy-plugin.tgz
 ```
 
 This creates:
 
 ```text
-synergy-frontend-kit-0.2.1.synergy-plugin.tgz.sig
+synergy-frontend-kit-0.2.2.synergy-plugin.tgz.sig
 ```
 
-Create a release tagged `v0.2.1` in:
+Create a release tagged `v0.2.2` in:
 
 ```text
-https://github.com/SII-Holos/synergy-frontend-kit
+https://github.com/EricSanchezok/synergy-frontend-kit
 ```
 
 Upload both assets:
 
 ```text
-synergy-frontend-kit-0.2.1.synergy-plugin.tgz
-synergy-frontend-kit-0.2.1.synergy-plugin.tgz.sig
+synergy-frontend-kit-0.2.2.synergy-plugin.tgz
+synergy-frontend-kit-0.2.2.synergy-plugin.tgz.sig
 ```
 
 From a checkout of `SII-Holos/synergy-plugins` adjacent to this repository:
 
 ```bash
-synergy-plugin entry synergy-frontend-kit-0.2.1.synergy-plugin.tgz \
-  --repo https://github.com/SII-Holos/synergy-frontend-kit \
+synergy-plugin entry synergy-frontend-kit-0.2.2.synergy-plugin.tgz \
+  --repo https://github.com/EricSanchezok/synergy-frontend-kit \
   --verified \
   --official \
   --write-entry ../synergy-plugins/plugins/synergy-frontend-kit.json
@@ -176,13 +176,13 @@ The official registry entry and package must satisfy:
 Before the registry PR merges, test the local registry UX:
 
 ```bash
-synergy plugin publish synergy-frontend-kit-0.2.1.synergy-plugin.tgz
+synergy plugin publish synergy-frontend-kit-0.2.2.synergy-plugin.tgz
 ```
 
 Also install directly from the tarball:
 
 ```bash
-synergy plugin add file:///absolute/path/to/synergy-frontend-kit-0.2.1.synergy-plugin.tgz
+synergy plugin add file:///absolute/path/to/synergy-frontend-kit-0.2.2.synergy-plugin.tgz
 ```
 
 After the registry PR merges, verify marketplace install:
