@@ -5,23 +5,23 @@
     "": {
       "name": "synergy-frontend-kit",
       "devDependencies": {
-        "@ericsanchezok/synergy-plugin": "^2.4.2",
-        "@ericsanchezok/synergy-plugin-kit": "^2.4.2",
+        "@ericsanchezok/synergy-plugin": "^2.4.3",
+        "@ericsanchezok/synergy-plugin-kit": "^2.4.3",
         "@types/bun": "^1.3.14",
         "solid-js": "^1.9.10",
         "typescript": "^6.0.3",
         "zod": "^4.4.3",
       },
       "peerDependencies": {
-        "@ericsanchezok/synergy-plugin": "^2.4.2",
+        "@ericsanchezok/synergy-plugin": "^2.4.3",
         "zod": "^4.4.3",
       },
     },
   },
   "packages": {
-    "@ericsanchezok/synergy-plugin": ["@ericsanchezok/synergy-plugin@2.4.2", "", { "peerDependencies": { "zod": ">=4.0.0" } }, "sha512-nznrvd5FCFmvv/jQLzFv6KBbp0SWHJ5jGXg2zYf4quDQXl4LjxpFdvW9aiL1w71jLJt3J8a7hEU7a0+2i1TFcQ=="],
+    "@ericsanchezok/synergy-plugin": ["@ericsanchezok/synergy-plugin@2.4.3", "", { "peerDependencies": { "zod": ">=4.0.0" } }, "sha512-n/uBSE6LHmSYreVHyBsBMbgjpwz4xcrfdeoXXCGbjX5LTmHzCV/lGJcMeIO1shjUugmDq7ax/KFmwtaBsAaxlg=="],
 
-    "@ericsanchezok/synergy-plugin-kit": ["@ericsanchezok/synergy-plugin-kit@2.4.2", "", { "dependencies": { "@ericsanchezok/synergy-plugin": "2.4.2", "yargs": "18.0.0" }, "peerDependencies": { "zod": ">=4.0.0" }, "bin": { "synergy-plugin": "dist/cli.js", "synergy-plugin-kit": "dist/cli.js" } }, "sha512-MMtvu79TWNnXZxUdY0ISx9sziKSkRpslbbom+3osEl5HjoPewNqgd2rqmgPH7aOO8MX/5J6Pv18LRwG4i+GotQ=="],
+    "@ericsanchezok/synergy-plugin-kit": ["@ericsanchezok/synergy-plugin-kit@2.4.3", "", { "dependencies": { "@ericsanchezok/synergy-plugin": "2.4.3", "yargs": "18.0.0" }, "peerDependencies": { "zod": ">=4.0.0" }, "bin": { "synergy-plugin": "dist/cli.js", "synergy-plugin-kit": "dist/cli.js" } }, "sha512-UwYkSZ3mtsSxIU2u3OG+YNDnz12I215wbBEQOovbrRyrIxqlcIOuRwgSyQKa40aUux3NrMtUzaUyh5oTuDGmUg=="],
 
     "@types/bun": ["@types/bun@1.3.14", "", { "dependencies": { "bun-types": "1.3.14" } }, "sha512-h1hFqFVcvAvD9j9K7ZW7vd82aSA+rTdznZa+5bwvCwqSB1jmmfLcbIWhOLx1/+boy/xmjgCs/OMUL8hRJSmnPw=="],
 

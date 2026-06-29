@@ -1,6 +1,6 @@
 {
   "name": "synergy-frontend-kit",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Official frontend capability kit for Synergy agents: curated design skills, pinned MCP tooling, setup automation, and design-readiness UI.",
   "author": "EricSanchez",
   "homepage": "https://github.com/EricSanchezok/synergy-frontend-kit",
@@ -16,9 +16,9 @@
     "accessibility"
   ],
   "icon": "icons/market.svg",
-  "minSynergyVersion": "2.4.2",
+  "minSynergyVersion": "2.4.3",
   "engines": {
-    "synergy": ">=2.4.2",
+    "synergy": ">=2.4.3",
     "bun": ">=1.2.0"
   },
   "main": "./src/index.ts",

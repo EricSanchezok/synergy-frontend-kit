@@ -1,6 +1,6 @@
 {
   "name": "synergy-frontend-kit",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
@@ -18,12 +18,12 @@
     "release:check": "bun run verify:skills && bun run validate:manifest && bun run typecheck && bun test && bun run validate:plugin && bun run build:plugin && bun run pack:plugin"
   },
   "peerDependencies": {
-    "@ericsanchezok/synergy-plugin": "^2.4.2",
+    "@ericsanchezok/synergy-plugin": "^2.4.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@ericsanchezok/synergy-plugin-kit": "^2.4.2",
-    "@ericsanchezok/synergy-plugin": "^2.4.2",
+    "@ericsanchezok/synergy-plugin-kit": "^2.4.3",
+    "@ericsanchezok/synergy-plugin": "^2.4.3",
     "@types/bun": "^1.3.14",
     "solid-js": "^1.9.10",
     "typescript": "^6.0.3",
