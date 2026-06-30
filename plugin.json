@@ -16,7 +16,6 @@
     "accessibility"
   ],
   "icon": "icons/market.svg",
-  "minSynergyVersion": "2.4.3",
   "engines": {
     "synergy": ">=2.4.3",
     "bun": ">=1.2.0"
