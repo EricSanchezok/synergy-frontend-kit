@@ -1,6 +1,6 @@
 {
   "name": "synergy-frontend-kit",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Official frontend capability kit for Synergy agents: curated design skills, pinned MCP tooling, setup automation, and design-readiness UI.",
   "author": "EricSanchez",
   "homepage": "https://github.com/EricSanchezok/synergy-frontend-kit",
@@ -51,14 +51,16 @@
     "ui": {
       "toolRenderers": false,
       "partRenderers": false,
-      "workspacePanels": true,
-      "globalPanels": false,
       "settings": true,
       "themes": false,
       "icons": false,
-      "routes": false,
       "trustedImport": true,
-      "sandboxIframe": false
+      "sandboxIframe": false,
+      "workbenchPanels": true,
+      "appPanels": false,
+      "appRoutes": false,
+      "messageSlots": false,
+      "commands": false
     },
     "hooks": {
       "events": "none",
@@ -159,7 +161,12 @@
       "locked": true,
       "shadcn": {
         "type": "local",
-        "command": ["npx", "-y", "shadcn@4.11.0", "mcp"],
+        "command": [
+          "npx",
+          "-y",
+          "shadcn@4.11.0",
+          "mcp"
+        ],
         "description": "Pinned shadcn/ui component registry and code-generation MCP server.",
         "startup": "lazy",
         "required": false,
@@ -169,14 +176,23 @@
       },
       "layout-context": {
         "type": "local",
-        "command": ["npx", "-y", "@layoutdesign/context@0.15.3", "serve"],
+        "command": [
+          "npx",
+          "-y",
+          "@layoutdesign/context@0.15.3",
+          "serve"
+        ],
         "description": "Pinned layout.design context server for design-system enforcement.",
         "startup": "lazy",
         "required": false
       },
       "playwright": {
         "type": "local",
-        "command": ["npx", "-y", "@playwright/mcp@0.0.76"],
+        "command": [
+          "npx",
+          "-y",
+          "@playwright/mcp@0.0.76"
+        ],
         "description": "Pinned Playwright MCP server for screenshots, visual checks, and browser automation.",
         "startup": "lazy",
         "required": false,
@@ -210,7 +226,10 @@
               },
               "startup": {
                 "type": "string",
-                "enum": ["lazy", "manual"],
+                "enum": [
+                  "lazy",
+                  "manual"
+                ],
                 "default": "lazy"
               },
               "timeoutMs": {
@@ -228,7 +247,11 @@
               },
               "visualVerification": {
                 "type": "string",
-                "enum": ["off", "smoke", "strict"],
+                "enum": [
+                  "off",
+                  "smoke",
+                  "strict"
+                ],
                 "default": "smoke"
               }
             }
@@ -253,14 +276,6 @@
     "ui": {
       "entry": "./dist/ui/index.js",
       "minUIApiVersion": "2.0.0",
-      "workspacePanels": [
-        {
-          "id": "design-readiness",
-          "label": "Design Readiness",
-          "icon": "panel-right",
-          "exportName": "DesignReadinessPanel"
-        }
-      ],
       "settings": [
         {
           "id": "frontend-kit",
@@ -268,6 +283,17 @@
           "icon": "palette",
           "group": "plugins",
           "exportName": "SettingsPanel"
+        }
+      ],
+      "workbenchPanels": [
+        {
+          "id": "design-readiness",
+          "label": "Design Readiness",
+          "icon": "panel-right",
+          "exportName": "DesignReadinessPanel",
+          "surface": "side",
+          "cardinality": "singleton",
+          "requiresSession": false
         }
       ]
     }

@@ -55,7 +55,7 @@ function stripOuterQuotes(value: string): string {
 
 function extractDescription(mdPath: string): string {
   const content = readFileSync(mdPath, "utf-8")
-  const match = content.match(/^---\n([\s\S]*?)\n---/)
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
   if (!match) throw new Error(`No frontmatter in ${mdPath}`)
   return parseDescription(match[1])
 }

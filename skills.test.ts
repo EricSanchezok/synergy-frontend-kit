@@ -24,11 +24,12 @@ const expectedSkills = sources.skills.map((skill) => skill.name)
 
 function readFrontmatter(name: string): Record<string, string> {
   const content = readFileSync(join(SKILLS_DIR, name, "SKILL.md"), "utf-8")
-  const match = content.match(/^---\n([\s\S]*?)\n---/)
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
   expect(match, `${name}/SKILL.md must have YAML frontmatter`).not.toBeNull()
 
   const result: Record<string, string> = {}
-  for (const line of match?.[1].split("\n") ?? []) {
+  for (const rawLine of match?.[1].split("\n") ?? []) {
+    const line = rawLine.replace(/\r$/, "")
     const field = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/)
     if (field) result[field[1]] = stripOuterQuotes(field[2].trim())
   }

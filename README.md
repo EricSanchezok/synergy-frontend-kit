@@ -68,7 +68,7 @@ The setup command initializes shadcn/ui, layout.design, and Playwright Chromium 
 The plugin contributes:
 
 - `Frontend Kit` settings section
-- `Design Readiness` workspace panel
+- `Design Readiness` workbench panel
 
 The panel is intentionally read-only: it shows status, commands, versions, and next checks without directly running shell setup.
 
@@ -136,7 +136,7 @@ bun run build:plugin
 bun run pack:plugin
 ```
 
-Plugin authoring commands come from `@ericsanchezok/synergy-plugin-kit >=2.4.3`. Use `synergy-plugin ...` or the package scripts for validation, build, pack, sign, and marketplace publishing. Use the Synergy CLI for runtime install and local registry smoke tests.
+Plugin authoring commands come from `@ericsanchezok/synergy-plugin-kit >=2.4.4`. Use `synergy-plugin ...` or the package scripts for validation, build, pack, sign, and marketplace publishing. Use the Synergy CLI for runtime install and local registry smoke tests.
 
 ## Official Release
 

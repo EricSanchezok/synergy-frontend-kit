@@ -42,14 +42,15 @@ function stripOuterQuotes(value: string): string {
 }
 
 function parseFrontmatter(content: string, file: string): Record<string, string> {
-  const match = content.match(/^---\n([\s\S]*?)\n---/)
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
   if (!match) {
     fail(`${file}: missing YAML frontmatter`)
     return {}
   }
 
   const fields: Record<string, string> = {}
-  for (const line of match[1].split("\n")) {
+  for (const rawLine of match[1].split("\n")) {
+    const line = rawLine.replace(/\r$/, "")
     const field = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/)
     if (field) fields[field[1]] = stripOuterQuotes(field[2].trim())
   }
