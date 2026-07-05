@@ -65,6 +65,7 @@
     "hooks": {
       "events": "none",
       "eventNames": [],
+      "config": false,
       "toolExecute": "none",
       "permissionAsk": "none",
       "promptTransform": false,
