@@ -1,8 +1,6 @@
 import { For, Show, createMemo } from "solid-js"
 import type { Component, JSX } from "solid-js"
-import type { PluginPanelProps, PluginSettingsProps } from "@ericsanchezok/synergy-plugin/ui"
-
-const SKILL_COUNT = 10
+import type { PluginSettingsProps } from "@ericsanchezok/synergy-plugin/ui"
 
 const MCP_SERVERS = [
   { id: "shadcn", label: "shadcn/ui", version: "4.11.0", purpose: "Component registry and code generation" },
@@ -10,153 +8,18 @@ const MCP_SERVERS = [
   { id: "playwright", label: "Playwright MCP", version: "0.0.76", purpose: "Screenshots and browser verification" },
 ] as const
 
-const STATUS_ROWS = [
-  { label: "Runtime contract", value: "Synergy PluginDescriptor 2.2", state: "ready" },
-  { label: "Skill bundles", value: `${SKILL_COUNT} registered skills with bundle verification`, state: "ready" },
-  { label: "MCP startup", value: "Lazy by default, version pinned", state: "ready" },
-  { label: "Setup command", value: "synergy synergy-frontend-kit setup --json", state: "watch" },
-] as const
-
-const styles: Record<string, JSX.CSSProperties> = {
-  root: {
-    "box-sizing": "border-box",
-    color: "oklch(0.18 0.018 230)",
-    background: "oklch(1 0 0)",
-    "font-family":
-      "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
-    "font-size": "13px",
-    "line-height": "1.45",
-    padding: "16px",
-    width: "100%",
+const DEFAULT_VALUES = {
+  mcp: {
+    shadcn: true,
+    layoutContext: true,
+    playwright: true,
+    startup: "lazy",
+    timeoutMs: 120000,
   },
-  header: {
-    display: "flex",
-    "align-items": "flex-start",
-    "justify-content": "space-between",
-    gap: "12px",
-    "border-bottom": "1px solid oklch(0.86 0.012 220)",
-    "padding-bottom": "12px",
-    "margin-bottom": "14px",
+  setup: {
+    autoPrompt: true,
+    visualVerification: "smoke",
   },
-  title: {
-    margin: 0,
-    "font-size": "16px",
-    "font-weight": 650,
-    "letter-spacing": "0",
-    "line-height": "1.25",
-  },
-  subtitle: {
-    margin: "4px 0 0",
-    color: "oklch(0.46 0.026 225)",
-    "max-width": "65ch",
-  },
-  badge: {
-    display: "inline-flex",
-    "align-items": "center",
-    "border-radius": "999px",
-    border: "1px solid oklch(0.76 0.055 180)",
-    background: "oklch(0.92 0.04 180)",
-    color: "oklch(0.27 0.07 180)",
-    padding: "2px 8px",
-    "font-size": "12px",
-    "font-weight": 600,
-    "white-space": "nowrap",
-  },
-  section: {
-    "border-top": "1px solid oklch(0.90 0.009 220)",
-    padding: "14px 0",
-  },
-  sectionTitle: {
-    margin: "0 0 8px",
-    "font-size": "13px",
-    "font-weight": 650,
-  },
-  row: {
-    display: "flex",
-    "align-items": "center",
-    "justify-content": "space-between",
-    gap: "12px",
-    padding: "9px 0",
-  },
-  stack: {
-    display: "grid",
-    gap: "8px",
-  },
-  rowLabel: {
-    display: "grid",
-    gap: "2px",
-    "min-width": 0,
-  },
-  strong: {
-    "font-weight": 600,
-  },
-  muted: {
-    color: "oklch(0.46 0.026 225)",
-  },
-  control: {
-    border: "1px solid oklch(0.78 0.015 220)",
-    "border-radius": "8px",
-    background: "oklch(1 0 0)",
-    color: "oklch(0.18 0.018 230)",
-    padding: "6px 8px",
-    "font-size": "13px",
-    "min-width": "128px",
-  },
-  input: {
-    border: "1px solid oklch(0.78 0.015 220)",
-    "border-radius": "8px",
-    background: "oklch(1 0 0)",
-    color: "oklch(0.18 0.018 230)",
-    padding: "6px 8px",
-    "font-size": "13px",
-    width: "112px",
-  },
-  code: {
-    display: "block",
-    "border-radius": "8px",
-    background: "oklch(0.936 0.01 180)",
-    border: "1px solid oklch(0.86 0.012 220)",
-    padding: "8px 10px",
-    "font-family": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
-    "font-size": "12px",
-    color: "oklch(0.22 0.024 230)",
-    overflow: "auto",
-  },
-  statusDot: {
-    width: "8px",
-    height: "8px",
-    "border-radius": "999px",
-    "flex-shrink": 0,
-  },
-  statusRow: {
-    display: "grid",
-    "grid-template-columns": "8px minmax(0, 1fr)",
-    gap: "10px",
-    "align-items": "start",
-    padding: "9px 0",
-  },
-  divider: {
-    height: "1px",
-    background: "oklch(0.90 0.009 220)",
-    margin: "6px 0",
-  },
-}
-
-function styleSheet() {
-  return `
-    *, *::before, *::after { box-sizing: border-box; }
-    button, input, select { font: inherit; }
-    input:focus-visible, select:focus-visible {
-      outline: 2px solid oklch(0.48 0.095 180);
-      outline-offset: 2px;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        transition-duration: 0.01ms !important;
-        animation-duration: 0.01ms !important;
-      }
-    }
-  `
 }
 
 function readSection(values: Record<string, unknown>, key: string): Record<string, unknown> {
@@ -175,13 +38,8 @@ function readString(section: Record<string, unknown>, key: string, fallback: str
 }
 
 function readNumber(section: Record<string, unknown>, key: string, fallback: number): number {
-  return typeof section[key] === "number" ? Number(section[key]) : fallback
-}
-
-function statusColor(state: string) {
-  if (state === "ready") return "oklch(0.50 0.11 155)"
-  if (state === "watch") return "oklch(0.64 0.12 75)"
-  return "oklch(0.56 0.16 30)"
+  const value = section[key]
+  return typeof value === "number" ? Number(value) : fallback
 }
 
 export const SettingsPanel: Component<PluginSettingsProps> = (props) => {
@@ -192,170 +50,334 @@ export const SettingsPanel: Component<PluginSettingsProps> = (props) => {
     const current = readSection(props.values, sectionName)
     props.onChange({
       ...props.values,
-      [sectionName]: {
-        ...current,
-        [key]: value,
-      },
+      [sectionName]: { ...current, [key]: value },
     })
   }
 
+  const reset = () => props.onChange({ ...DEFAULT_VALUES })
+
   return (
-    <section style={styles.root} aria-label="Synergy Frontend Kit settings">
+    <div class="sfk-settings" role="tabpanel" aria-label="Frontend Kit settings">
       <style>{styleSheet()}</style>
-      <header style={styles.header}>
+
+      <header class="sfk-header">
         <div>
-          <h2 style={styles.title}>Frontend Kit</h2>
-          <p style={styles.subtitle}>Configure official design skills, pinned MCP servers, and setup behavior.</p>
+          <h2 class="sfk-title">Frontend Kit</h2>
+          <p class="sfk-subtitle">Pinned MCP servers and setup behavior for frontend tasks.</p>
         </div>
-        <span style={styles.badge}>official</span>
       </header>
 
-      <section style={styles.section} aria-labelledby="mcp-settings-title">
-        <h3 id="mcp-settings-title" style={styles.sectionTitle}>
-          MCP Servers
-        </h3>
-        <div style={styles.stack}>
+      <section class="sfk-card" aria-labelledby="sfk-mcp-title">
+        <h3 id="sfk-mcp-title" class="sfk-section-title">MCP Servers</h3>
+        <p class="sfk-section-desc">Enable the design/frontend MCP servers this plugin can start automatically.</p>
+        <div class="sfk-rows">
           <For each={MCP_SERVERS}>
-            {(server) => (
-              <label style={styles.row}>
-                <span style={styles.rowLabel}>
-                  <span style={styles.strong}>{server.label}</span>
-                  <span style={styles.muted}>
-                    {server.purpose} - {server.version}
+            {(server) => {
+              const enabled = readBool(mcp(), server.id, true)
+              return (
+                <label class="sfk-row">
+                  <span class="sfk-row-text">
+                    <span class="sfk-row-title">{server.label}</span>
+                    <span class="sfk-row-desc">
+                      {server.purpose} · v{server.version}
+                    </span>
                   </span>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={readBool(mcp(), server.id, true)}
-                  onInput={(event) => patch("mcp", server.id, event.currentTarget.checked)}
-                />
-              </label>
-            )}
+                  <span class="sfk-toggle">
+                    <input
+                      type="checkbox"
+                      checked={enabled}
+                      onInput={(event) => patch("mcp", server.id, event.currentTarget.checked)}
+                    />
+                    <span class="sfk-toggle-track" aria-hidden="true" />
+                  </span>
+                </label>
+              )
+            }}
           </For>
         </div>
       </section>
 
-      <section style={styles.section} aria-labelledby="runtime-settings-title">
-        <h3 id="runtime-settings-title" style={styles.sectionTitle}>
-          Runtime
-        </h3>
-        <label style={styles.row}>
-          <span style={styles.rowLabel}>
-            <span style={styles.strong}>Startup mode</span>
-            <span style={styles.muted}>Lazy avoids package downloads until a server is used.</span>
-          </span>
-          <select
-            style={styles.control}
-            value={readString(mcp(), "startup", "lazy")}
-            onInput={(event) => patch("mcp", "startup", event.currentTarget.value)}
-          >
-            <option value="lazy">Lazy</option>
-            <option value="manual">Manual</option>
-          </select>
-        </label>
-        <label style={styles.row}>
-          <span style={styles.rowLabel}>
-            <span style={styles.strong}>Timeout</span>
-            <span style={styles.muted}>Maximum setup/MCP wait in milliseconds.</span>
-          </span>
-          <input
-            style={styles.input}
-            type="number"
-            min="5000"
-            step="5000"
-            value={readNumber(mcp(), "timeoutMs", 120000)}
-            onInput={(event) => patch("mcp", "timeoutMs", Number(event.currentTarget.value))}
-          />
-        </label>
-      </section>
+      <section class="sfk-card" aria-labelledby="sfk-runtime-title">
+        <h3 id="sfk-runtime-title" class="sfk-section-title">Runtime</h3>
+        <p class="sfk-section-desc">When and how long MCP servers are allowed to start.</p>
+        <div class="sfk-rows">
+          <label class="sfk-row">
+            <span class="sfk-row-text">
+              <span class="sfk-row-title">Startup mode</span>
+              <span class="sfk-row-desc">Lazy avoids downloading packages until a server is actually used.</span>
+            </span>
+            <select
+              class="sfk-select"
+              value={readString(mcp(), "startup", "lazy")}
+              onInput={(event) => patch("mcp", "startup", event.currentTarget.value)}
+            >
+              <option value="lazy">Lazy</option>
+              <option value="manual">Manual</option>
+            </select>
+          </label>
 
-      <section style={styles.section} aria-labelledby="setup-settings-title">
-        <h3 id="setup-settings-title" style={styles.sectionTitle}>
-          Setup
-        </h3>
-        <label style={styles.row}>
-          <span style={styles.rowLabel}>
-            <span style={styles.strong}>Prompt when project tooling is missing</span>
-            <span style={styles.muted}>Agents should ask before running shell setup commands.</span>
-          </span>
-          <input
-            type="checkbox"
-            checked={readBool(setup(), "autoPrompt", true)}
-            onInput={(event) => patch("setup", "autoPrompt", event.currentTarget.checked)}
-          />
-        </label>
-        <label style={styles.row}>
-          <span style={styles.rowLabel}>
-            <span style={styles.strong}>Visual verification</span>
-            <span style={styles.muted}>How strongly frontend tasks should prefer screenshots and browser checks.</span>
-          </span>
-          <select
-            style={styles.control}
-            value={readString(setup(), "visualVerification", "smoke")}
-            onInput={(event) => patch("setup", "visualVerification", event.currentTarget.value)}
-          >
-            <option value="off">Off</option>
-            <option value="smoke">Smoke</option>
-            <option value="strict">Strict</option>
-          </select>
-        </label>
-      </section>
-    </section>
-  )
-}
-
-export const DesignReadinessPanel: Component<PluginPanelProps> = (props) => {
-  return (
-    <aside style={styles.root} aria-label="Design readiness">
-      <style>{styleSheet()}</style>
-      <header style={styles.header}>
-        <div>
-          <h2 style={styles.title}>Design Readiness</h2>
-          <p style={styles.subtitle}>A compact check of the official frontend stack for this workspace.</p>
-        </div>
-        <span style={styles.badge}>2.2</span>
-      </header>
-
-      <section style={styles.section} aria-labelledby="readiness-status-title">
-        <h3 id="readiness-status-title" style={styles.sectionTitle}>
-          Status
-        </h3>
-        <For each={STATUS_ROWS}>
-          {(row) => (
-            <div style={styles.statusRow}>
-              <span style={{ ...styles.statusDot, background: statusColor(row.state) }} aria-hidden="true" />
-              <span style={styles.rowLabel}>
-                <span style={styles.strong}>{row.label}</span>
-                <span style={styles.muted}>{row.value}</span>
-              </span>
-            </div>
-          )}
-        </For>
-      </section>
-
-      <section style={styles.section} aria-labelledby="readiness-commands-title">
-        <h3 id="readiness-commands-title" style={styles.sectionTitle}>
-          Commands
-        </h3>
-        <div style={styles.stack}>
-          <code style={styles.code}>bash scripts/update.sh --dry-run</code>
-          <code style={styles.code}>bun run verify:skills</code>
-          <code style={styles.code}>synergy synergy-frontend-kit setup --dry-run --json</code>
+          <label class="sfk-row">
+            <span class="sfk-row-text">
+              <span class="sfk-row-title">Timeout</span>
+              <span class="sfk-row-desc">Maximum wait time for MCP/setup commands.</span>
+            </span>
+            <input
+              class="sfk-input sfk-input--number"
+              type="number"
+              min="5000"
+              step="5000"
+              value={readNumber(mcp(), "timeoutMs", 120000)}
+              onInput={(event) => patch("mcp", "timeoutMs", Number(event.currentTarget.value))}
+            />
+          </label>
         </div>
       </section>
 
-      <section style={styles.section} aria-labelledby="readiness-scope-title">
-        <h3 id="readiness-scope-title" style={styles.sectionTitle}>
-          Workspace
-        </h3>
-        <p style={styles.subtitle}>
-          <Show when={props.scopeId} fallback="No active workspace scope was provided by the host.">
-            Scope: {props.scopeId}
-          </Show>
-        </p>
+      <section class="sfk-card" aria-labelledby="sfk-setup-title">
+        <h3 id="sfk-setup-title" class="sfk-section-title">Setup</h3>
+        <p class="sfk-section-desc">How agents should behave when project tooling is missing.</p>
+        <div class="sfk-rows">
+          <label class="sfk-row">
+            <span class="sfk-row-text">
+              <span class="sfk-row-title">Prompt before running setup commands</span>
+              <span class="sfk-row-desc">Agents ask for confirmation instead of running shell setup automatically.</span>
+            </span>
+            <span class="sfk-toggle">
+              <input
+                type="checkbox"
+                checked={readBool(setup(), "autoPrompt", true)}
+                onInput={(event) => patch("setup", "autoPrompt", event.currentTarget.checked)}
+              />
+              <span class="sfk-toggle-track" aria-hidden="true" />
+            </span>
+          </label>
+
+          <label class="sfk-row">
+            <span class="sfk-row-text">
+              <span class="sfk-row-title">Visual verification</span>
+              <span class="sfk-row-desc">How strongly frontend tasks should rely on screenshots and browser checks.</span>
+            </span>
+            <select
+              class="sfk-select"
+              value={readString(setup(), "visualVerification", "smoke")}
+              onInput={(event) => patch("setup", "visualVerification", event.currentTarget.value)}
+            >
+              <option value="off">Off</option>
+              <option value="smoke">Smoke</option>
+              <option value="strict">Strict</option>
+            </select>
+          </label>
+        </div>
       </section>
-    </aside>
+
+      <footer class="sfk-footer">
+        <button class="sfk-reset" type="button" onClick={reset}>
+          Reset to defaults
+        </button>
+      </footer>
+    </div>
   )
 }
 
-export default DesignReadinessPanel
+export default SettingsPanel
+
+function styleSheet(): string {
+  return `
+    .sfk-settings {
+      box-sizing: border-box;
+      min-height: 100%;
+      padding: 28px 32px 40px;
+      font-family: var(--font-family-sans, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+      font-size: var(--type-ui-body-size, 0.875rem);
+      line-height: var(--type-ui-body-line-height, 1.375rem);
+      color: var(--text-base);
+      background: transparent;
+    }
+    .sfk-settings *, .sfk-settings *::before, .sfk-settings *::after { box-sizing: border-box; }
+
+    .sfk-header {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid color-mix(in srgb, var(--border-base) 42%, transparent);
+    }
+    .sfk-title {
+      margin: 0;
+      font-size: var(--type-ui-page-title-size, 1.5rem);
+      font-weight: var(--font-weight-semibold, 600);
+      line-height: var(--type-ui-page-title-line-height, 1.875rem);
+      color: var(--text-strong);
+      letter-spacing: var(--letter-spacing-normal, 0);
+    }
+    .sfk-subtitle {
+      margin: 4px 0 0;
+      color: var(--text-weak);
+      font-size: var(--type-ui-body-size, 0.875rem);
+      line-height: var(--type-ui-body-line-height, 1.375rem);
+    }
+
+    .sfk-card {
+      margin-bottom: 16px;
+      padding: 18px 20px;
+      border-radius: var(--radius-lg, 0.5rem);
+      border: 1px solid var(--border-weaker-base, rgba(17, 24, 39, 0.06));
+      background: var(--surface-raised-base, #ffffff);
+      box-shadow: var(--shadow-xs-border, 0 0 0 1px rgba(17, 24, 39, 0.06));
+    }
+    .sfk-section-title {
+      margin: 0 0 4px;
+      font-size: var(--type-ui-section-title-size, 1rem);
+      font-weight: var(--font-weight-semibold, 600);
+      line-height: var(--type-ui-section-title-line-height, 1.375rem);
+      color: var(--text-strong);
+    }
+    .sfk-section-desc {
+      margin: 0 0 12px;
+      color: var(--text-weak);
+      font-size: var(--type-ui-body-size, 0.875rem);
+      line-height: var(--type-ui-body-line-height, 1.375rem);
+    }
+
+    .sfk-rows {
+      display: flex;
+      flex-direction: column;
+    }
+    .sfk-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 54px;
+      padding: 12px 0;
+      cursor: pointer;
+    }
+    .sfk-row:not(:last-child) {
+      border-bottom: 1px solid color-mix(in srgb, var(--border-base) 24%, transparent);
+    }
+    .sfk-row-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+    .sfk-row-title {
+      color: var(--text-base);
+      font-size: var(--type-ui-row-title-size, 0.875rem);
+      font-weight: var(--font-weight-medium, 500);
+      line-height: var(--type-ui-row-title-line-height, 1.25rem);
+    }
+    .sfk-row-desc {
+      color: var(--text-weak);
+      font-size: var(--type-ui-caption-size, 0.75rem);
+      line-height: var(--type-ui-caption-line-height, 1rem);
+    }
+
+    .sfk-select {
+      min-width: 140px;
+      padding: 7px 10px;
+      border: 1px solid var(--border-weaker-base, rgba(17, 24, 39, 0.06));
+      border-radius: var(--radius-md, 0.375rem);
+      background: var(--input-base, #f4f4f5);
+      color: var(--text-strong);
+      font: inherit;
+      font-size: var(--type-ui-control-size, 0.8125rem);
+      line-height: var(--type-ui-control-line-height, 1.125rem);
+      outline: none;
+    }
+    .sfk-select:focus-visible {
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-strong) 24%, transparent),
+                  0 0 0 3px color-mix(in srgb, var(--text-strong) 7%, transparent);
+    }
+
+    .sfk-input {
+      padding: 7px 10px;
+      border: 1px solid var(--border-weaker-base, rgba(17, 24, 39, 0.06));
+      border-radius: var(--radius-md, 0.375rem);
+      background: var(--input-base, #f4f4f5);
+      color: var(--text-strong);
+      font: inherit;
+      font-size: var(--type-ui-control-size, 0.8125rem);
+      line-height: var(--type-ui-control-line-height, 1.125rem);
+      outline: none;
+    }
+    .sfk-input--number { width: 120px; }
+    .sfk-input:focus-visible {
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-strong) 24%, transparent),
+                  0 0 0 3px color-mix(in srgb, var(--text-strong) 7%, transparent);
+    }
+
+    .sfk-toggle {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      flex-shrink: 0;
+      width: 40px;
+      height: 24px;
+    }
+    .sfk-toggle input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      margin: 0;
+      cursor: pointer;
+      z-index: 1;
+    }
+    .sfk-toggle-track {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--border-base, rgba(17, 24, 39, 0.14));
+      transition: background-color 140ms ease;
+    }
+    .sfk-toggle-track::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--surface-raised-base, #ffffff);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+      transition: transform 140ms ease;
+    }
+    .sfk-toggle input:checked + .sfk-toggle-track {
+      background: var(--surface-interactive-base, var(--cobalt-light-3));
+    }
+    .sfk-toggle input:checked + .sfk-toggle-track::after {
+      transform: translateX(16px);
+    }
+    .sfk-toggle input:focus-visible + .sfk-toggle-track {
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-strong) 24%, transparent),
+                  0 0 0 3px color-mix(in srgb, var(--text-strong) 7%, transparent);
+    }
+
+    .sfk-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .sfk-reset {
+      padding: 7px 12px;
+      border-radius: var(--radius-md, 0.375rem);
+      border: 1px solid var(--border-weaker-base, rgba(17, 24, 39, 0.06));
+      background: var(--surface-base, #ffffff);
+      color: var(--text-base);
+      font: inherit;
+      font-size: var(--type-ui-control-size, 0.8125rem);
+      line-height: var(--type-ui-control-line-height, 1.125rem);
+      cursor: pointer;
+      transition: background-color 120ms ease;
+    }
+    .sfk-reset:hover {
+      background: var(--surface-hover-base, #f7f7f8);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .sfk-toggle-track, .sfk-toggle-track::after, .sfk-reset { transition: none; }
+    }
+  `
+}

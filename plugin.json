@@ -1,7 +1,7 @@
 {
   "name": "synergy-frontend-kit",
-  "version": "0.2.4",
-  "description": "Official frontend capability kit for Synergy agents: curated design skills, pinned MCP tooling, setup automation, and design-readiness UI.",
+  "version": "0.3.0",
+  "description": "Official frontend capability kit for Synergy agents: curated design skills, pinned MCP tooling, and setup automation.",
   "author": "EricSanchez",
   "homepage": "https://github.com/EricSanchezok/synergy-frontend-kit",
   "repository": "https://github.com/EricSanchezok/synergy-frontend-kit",
@@ -17,14 +17,10 @@
   ],
   "icon": "icons/market.svg",
   "engines": {
-    "synergy": ">=2.4.3",
+    "synergy": ">=3.0.0",
     "bun": ">=1.2.0"
   },
   "main": "./src/index.ts",
-  "trust": {
-    "requestedTier": "trusted-import",
-    "reason": "Official Synergy plugin UI with settings and workspace status panels."
-  },
   "permissions": {
     "tools": {
       "filesystem": "write",
@@ -32,49 +28,11 @@
       "shell": true,
       "mcp": "spawn"
     },
-    "data": {
-      "session": "none",
-      "workspace": "metadata",
-      "config": "plugin",
-      "secrets": "none"
-    },
-    "network": {
-      "connectDomains": [
-        "registry.npmjs.org",
-        "api.github.com",
-        "github.com",
-        "raw.githubusercontent.com"
-      ],
-      "resourceDomains": [],
-      "frameDomains": []
-    },
-    "ui": {
-      "toolRenderers": false,
-      "partRenderers": false,
-      "settings": true,
-      "themes": false,
-      "icons": false,
-      "trustedImport": true,
-      "sandboxIframe": false,
-      "workbenchPanels": true,
-      "appPanels": false,
-      "appRoutes": false,
-      "messageSlots": false,
-      "commands": false
-    },
-    "hooks": {
-      "events": "none",
-      "eventNames": [],
-      "config": false,
-      "toolExecute": "none",
-      "permissionAsk": "none",
-      "promptTransform": false,
-      "compactionTransform": false
-    }
+    "ui": true
   },
   "runtime": {
     "mode": "process",
-    "minRuntimeApiVersion": "2.2.0",
+    "minRuntimeApiVersion": "3.0.0",
     "resources": {
       "memoryMb": 256,
       "startupTimeoutMs": 15000,
@@ -121,7 +79,7 @@
       },
       {
         "name": "a11y-audit",
-        "description": "Run accessibility audits on web projects combining automated scanning (axe-core, Lighthouse) with WCAG 2.1 AA compliance mapping, manual check guidance, and structured reporting. Output is configurable: markdown report only, markdown plus machine-readable JSON, or markdown plus issue tracker integration. Use this skill whenever the user mentions \"accessibility audit\", \"a11y audit\", \"WCAG audit\", \"accessibility check\", \"compliance scan\", or asks to check a web project for accessibility issues. Also trigger when the user wants to verify WCAG conformance or map findings to a specific standard (CAN-ASC-6.2, EN 301 549, ADA/AODA).",
+        "description": "Run accessibility audits on web projects combining automated scanning (axe-core, Lighthouse) with WCAG 2.1 AA compliance mapping, manual check guidance, and structured reporting. Output is configurable: markdown report only, markdown plus machine-readable JSON, or markdown plus issue tracker integration. Use this skill whenever the user mentions \"accessibility audit\", \"a11y audit\", \"WCAG audit\", \"accessibility check\", \"compliance scan\", or asks to check a web project for accessibility issues. Also trigger when the user wants to verify WCAG conformance or map findings to a specific stan…",
         "dir": "skills/a11y-audit"
       },
       {
@@ -276,7 +234,7 @@
     },
     "ui": {
       "entry": "./dist/ui/index.js",
-      "minUIApiVersion": "2.0.0",
+      "minUIApiVersion": "3.0",
       "settings": [
         {
           "id": "frontend-kit",
@@ -284,17 +242,6 @@
           "icon": "palette",
           "group": "plugins",
           "exportName": "SettingsPanel"
-        }
-      ],
-      "workbenchPanels": [
-        {
-          "id": "design-readiness",
-          "label": "Design Readiness",
-          "icon": "panel-right",
-          "exportName": "DesignReadinessPanel",
-          "surface": "side",
-          "cardinality": "singleton",
-          "requiresSession": false
         }
       ]
     }
