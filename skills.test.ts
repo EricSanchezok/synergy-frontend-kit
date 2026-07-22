@@ -1,90 +1,107 @@
-import { describe, expect, test } from "bun:test"
-import { existsSync, readdirSync, readFileSync } from "node:fs"
-import { join } from "node:path"
-import { renderSetupResult, type SetupStepResult } from "./src/setup"
+import { describe, expect, test } from "bun:test";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { FrontendKitPlugin, SKILL_ENTRIES } from "./src";
+import { renderSetupResult, runSetup, type SetupStepResult } from "./src/setup";
 
 interface SkillSource {
-  name: string
-  aliases?: string[]
-  licenseFiles?: string[]
+  name: string;
+  aliases?: string[];
+  licenseFiles?: string[];
 }
 
 interface SourcesFile {
-  skills: SkillSource[]
+  skills: SkillSource[];
 }
 
-const ROOT = import.meta.dirname
-const SKILLS_DIR = join(ROOT, "skills")
-const PLUGIN_JSON_PATH = join(ROOT, "plugin.json")
-const SOURCES_PATH = join(ROOT, "skills.sources.json")
-const INDEX_PATH = join(ROOT, "src", "index.ts")
-
-const sources = JSON.parse(readFileSync(SOURCES_PATH, "utf-8")) as SourcesFile
-const expectedSkills = sources.skills.map((skill) => skill.name)
+const ROOT = import.meta.dirname;
+const SKILLS_DIR = join(ROOT, "skills");
+const SOURCES_PATH = join(ROOT, "skills.sources.json");
+const sources = JSON.parse(readFileSync(SOURCES_PATH, "utf-8")) as SourcesFile;
+const expectedSkills = sources.skills.map((skill) => skill.name);
 
 function readFrontmatter(name: string): Record<string, string> {
-  const content = readFileSync(join(SKILLS_DIR, name, "SKILL.md"), "utf-8")
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
-  expect(match, `${name}/SKILL.md must have YAML frontmatter`).not.toBeNull()
-
-  const result: Record<string, string> = {}
+  const content = readFileSync(join(SKILLS_DIR, name, "SKILL.md"), "utf-8");
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  expect(match, `${name}/SKILL.md must have YAML frontmatter`).not.toBeNull();
+  const result: Record<string, string> = {};
   for (const rawLine of match?.[1].split("\n") ?? []) {
-    const line = rawLine.replace(/\r$/, "")
-    const field = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/)
-    if (field) result[field[1]] = stripOuterQuotes(field[2].trim())
+    const field = rawLine
+      .replace(/\r$/, "")
+      .match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+    if (!field) continue;
+    const value = field[2].trim();
+    const first = value[0];
+    const last = value[value.length - 1];
+    result[field[1]] =
+      value.length >= 2 && (first === `"` || first === "'") && first === last
+        ? value.slice(1, -1)
+        : value;
   }
-  return result
-}
-
-function stripOuterQuotes(value: string): string {
-  if (value.length < 2) return value
-  const first = value[0]
-  const last = value[value.length - 1]
-  return (first === `"` || first === "'") && first === last ? value.slice(1, -1) : value
-}
-
-function runtimeSkillNames(): string[] {
-  const content = readFileSync(INDEX_PATH, "utf-8")
-  const block = content.match(/export const SKILL_ENTRIES:[\s\S]*?\n\]/)
-  expect(block, "src/index.ts must expose SKILL_ENTRIES").not.toBeNull()
-  return [...(block?.[0] ?? "").matchAll(/name:\s*"([^"]+)"/g)].map((match) => match[1])
+  return result;
 }
 
 test("all sourced skill directories exist", () => {
   for (const name of expectedSkills) {
-    expect(existsSync(join(SKILLS_DIR, name)), `missing skill directory: ${name}`).toBe(true)
-    expect(existsSync(join(SKILLS_DIR, name, "SKILL.md")), `missing SKILL.md: ${name}`).toBe(true)
+    expect(
+      existsSync(join(SKILLS_DIR, name)),
+      `missing skill directory: ${name}`,
+    ).toBe(true);
+    expect(
+      existsSync(join(SKILLS_DIR, name, "SKILL.md")),
+      `missing SKILL.md: ${name}`,
+    ).toBe(true);
   }
-})
+});
 
 describe("SKILL.md frontmatter", () => {
   for (const source of sources.skills) {
     test(`${source.name} has stable public identity`, () => {
-      const frontmatter = readFrontmatter(source.name)
-      expect(frontmatter.name).toBe(source.name)
-      expect(frontmatter.description?.length ?? 0).toBeGreaterThan(0)
-    })
+      const frontmatter = readFrontmatter(source.name);
+      expect(frontmatter.name).toBe(source.name);
+      expect(frontmatter.description?.length ?? 0).toBeGreaterThan(0);
+    });
   }
-})
+});
 
-test("plugin.json contributes all skills in source order", () => {
-  const plugin = JSON.parse(readFileSync(PLUGIN_JSON_PATH, "utf-8"))
-  const actual = plugin.contributes.skills.map((skill: { name: string }) => skill.name)
-  expect(actual).toEqual(expectedSkills)
-})
+test("API3 definition contributes all skills in source order", () => {
+  const actual = FrontendKitPlugin.contributions
+    .filter((contribution) => contribution.kind === "skill")
+    .map((contribution) => contribution.id);
+  expect(actual).toEqual(expectedSkills);
+  expect(SKILL_ENTRIES.map((entry) => entry.name)).toEqual(expectedSkills);
+});
 
-test("runtime contributes all skills in source order", () => {
-  expect(runtimeSkillNames()).toEqual(expectedSkills)
-})
+test("API3 definition contains MCP, CLI, and Settings without Workbench", () => {
+  expect(
+    FrontendKitPlugin.contributions
+      .filter((item) => item.kind === "mcp")
+      .map((item) => item.id),
+  ).toEqual(["shadcn", "layout-context", "playwright"]);
+  expect(
+    FrontendKitPlugin.contributions.some(
+      (item) => item.kind === "cli.command" && item.id === "setup",
+    ),
+  ).toBe(true);
+  expect(
+    FrontendKitPlugin.contributions.some(
+      (item) => item.kind === "ui.settings" && item.id === "frontend-kit",
+    ),
+  ).toBe(true);
+  expect(
+    FrontendKitPlugin.contributions.some(
+      (item) => item.kind === "ui.workbenchPanel",
+    ),
+  ).toBe(false);
+});
 
 test("no orphan skill directories exist", () => {
   const onDisk = readdirSync(SKILLS_DIR, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
-    .sort()
-
-  expect(onDisk).toEqual([...expectedSkills].sort())
-})
+    .sort();
+  expect(onDisk).toEqual([...expectedSkills].sort());
+});
 
 test("declared license files are bundled", () => {
   for (const source of sources.skills) {
@@ -92,10 +109,10 @@ test("declared license files are bundled", () => {
       expect(
         existsSync(join(SKILLS_DIR, source.name, licenseFile)),
         `${source.name} must include ${licenseFile}`,
-      ).toBe(true)
+      ).toBe(true);
     }
   }
-})
+});
 
 test("setup renderer supports machine-readable dry-run output", () => {
   const steps: SetupStepResult[] = [
@@ -107,11 +124,33 @@ test("setup renderer supports machine-readable dry-run output", () => {
       skipped: false,
       ok: true,
     },
-  ]
+  ];
+  const parsed = JSON.parse(
+    renderSetupResult(steps, { "dry-run": true, json: true }),
+  );
+  expect(parsed.plugin).toBe("synergy-frontend-kit");
+  expect(parsed.dryRun).toBe(true);
+  expect(parsed.steps[0].id).toBe("shadcn");
+});
 
-  const output = renderSetupResult(steps, { "dry-run": true, json: true })
-  const parsed = JSON.parse(output)
-  expect(parsed.plugin).toBe("synergy-frontend-kit")
-  expect(parsed.dryRun).toBe(true)
-  expect(parsed.steps[0].id).toBe("shadcn")
-})
+test("setup executes argv commands through shell.run and preserves nonzero results", async () => {
+  const commands: string[][] = [];
+  const results = await runSetup(
+    {
+      shell: {
+        async run(input) {
+          commands.push(input.command);
+          return {
+            stdout: "",
+            stderr: input.command.includes("playwright@1.61.1") ? "failed" : "",
+            exitCode: input.command.includes("playwright@1.61.1") ? 2 : 0,
+          };
+        },
+      },
+    },
+    {},
+  );
+  expect(commands).toHaveLength(3);
+  expect(results.map((result) => result.ok)).toEqual([true, true, false]);
+  expect(results[2].error).toBe("failed");
+});

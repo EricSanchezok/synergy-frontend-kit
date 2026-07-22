@@ -1,12 +1,34 @@
-import { For, Show, createMemo } from "solid-js"
-import type { Component, JSX } from "solid-js"
-import type { PluginSettingsProps } from "@ericsanchezok/synergy-plugin/ui"
+import {
+  For,
+  Show,
+  createMemo,
+  createSignal,
+  onCleanup,
+  onMount,
+} from "solid-js";
+import type { Component, JSX } from "solid-js";
+import type { PluginSurfaceContext } from "@ericsanchezok/synergy-plugin";
 
 const MCP_SERVERS = [
-  { id: "shadcn", label: "shadcn/ui", version: "4.11.0", purpose: "Component registry and code generation" },
-  { id: "layoutContext", label: "layout.design", version: "0.15.3", purpose: "Design-system context and linting" },
-  { id: "playwright", label: "Playwright MCP", version: "0.0.76", purpose: "Screenshots and browser verification" },
-] as const
+  {
+    id: "shadcn",
+    label: "shadcn/ui",
+    version: "4.11.0",
+    purpose: "Component registry and code generation",
+  },
+  {
+    id: "layoutContext",
+    label: "layout.design",
+    version: "0.15.3",
+    purpose: "Design-system context and linting",
+  },
+  {
+    id: "playwright",
+    label: "Playwright MCP",
+    version: "0.0.76",
+    purpose: "Screenshots and browser verification",
+  },
+] as const;
 
 const DEFAULT_VALUES = {
   mcp: {
@@ -20,60 +42,100 @@ const DEFAULT_VALUES = {
     autoPrompt: true,
     visualVerification: "smoke",
   },
-}
+};
 
-function readSection(values: Record<string, unknown>, key: string): Record<string, unknown> {
-  const section = values[key]
+function readSection(
+  values: Record<string, unknown>,
+  key: string,
+): Record<string, unknown> {
+  const section = values[key];
   return section && typeof section === "object" && !Array.isArray(section)
     ? (section as Record<string, unknown>)
-    : {}
+    : {};
 }
 
-function readBool(section: Record<string, unknown>, key: string, fallback: boolean): boolean {
-  return typeof section[key] === "boolean" ? Boolean(section[key]) : fallback
+function readBool(
+  section: Record<string, unknown>,
+  key: string,
+  fallback: boolean,
+): boolean {
+  return typeof section[key] === "boolean" ? Boolean(section[key]) : fallback;
 }
 
-function readString(section: Record<string, unknown>, key: string, fallback: string): string {
-  return typeof section[key] === "string" ? String(section[key]) : fallback
+function readString(
+  section: Record<string, unknown>,
+  key: string,
+  fallback: string,
+): string {
+  return typeof section[key] === "string" ? String(section[key]) : fallback;
 }
 
-function readNumber(section: Record<string, unknown>, key: string, fallback: number): number {
-  const value = section[key]
-  return typeof value === "number" ? Number(value) : fallback
+function readNumber(
+  section: Record<string, unknown>,
+  key: string,
+  fallback: number,
+): number {
+  const value = section[key];
+  return typeof value === "number" ? Number(value) : fallback;
 }
 
-export const SettingsPanel: Component<PluginSettingsProps> = (props) => {
-  const mcp = createMemo(() => readSection(props.values, "mcp"))
-  const setup = createMemo(() => readSection(props.values, "setup"))
+export const SettingsPanel: Component<PluginSurfaceContext> = (context) => {
+  const [values, setValues] = createSignal<Record<string, unknown>>({
+    ...DEFAULT_VALUES,
+  });
+  const mcp = createMemo(() => readSection(values(), "mcp"));
+  const setup = createMemo(() => readSection(values(), "setup"));
 
+  const replace = async (next: Record<string, unknown>) => {
+    await context.settings.replace(next);
+    setValues(next);
+  };
   const patch = (sectionName: "mcp" | "setup", key: string, value: unknown) => {
-    const current = readSection(props.values, sectionName)
-    props.onChange({
-      ...props.values,
+    const currentValues = values();
+    const current = readSection(currentValues, sectionName);
+    void replace({
+      ...currentValues,
       [sectionName]: { ...current, [key]: value },
-    })
-  }
+    });
+  };
 
-  const reset = () => props.onChange({ ...DEFAULT_VALUES })
+  const reset = () => void replace({ ...DEFAULT_VALUES });
+  let unsubscribe: (() => void) | undefined;
+  onMount(() => {
+    unsubscribe = context.settings.subscribe(setValues);
+    void context.settings.get().then(setValues);
+  });
+  onCleanup(() => unsubscribe?.());
 
   return (
-    <div class="sfk-settings" role="tabpanel" aria-label="Frontend Kit settings">
+    <div
+      class="sfk-settings"
+      role="tabpanel"
+      aria-label="Frontend Kit settings"
+    >
       <style>{styleSheet()}</style>
 
       <header class="sfk-header">
         <div>
           <h2 class="sfk-title">Frontend Kit</h2>
-          <p class="sfk-subtitle">Pinned MCP servers and setup behavior for frontend tasks.</p>
+          <p class="sfk-subtitle">
+            Pinned MCP servers and setup behavior for frontend tasks.
+          </p>
         </div>
       </header>
 
       <section class="sfk-card" aria-labelledby="sfk-mcp-title">
-        <h3 id="sfk-mcp-title" class="sfk-section-title">MCP Servers</h3>
-        <p class="sfk-section-desc">Enable the design/frontend MCP servers this plugin can start automatically.</p>
+        <h3 id="sfk-mcp-title" class="sfk-section-title">
+          MCP Servers
+        </h3>
+        <p class="sfk-section-desc">
+          Enable the design/frontend MCP servers this plugin can start
+          automatically.
+        </p>
         <div class="sfk-rows">
           <For each={MCP_SERVERS}>
             {(server) => {
-              const enabled = readBool(mcp(), server.id, true)
+              const enabled = readBool(mcp(), server.id, true);
               return (
                 <label class="sfk-row">
                   <span class="sfk-row-text">
@@ -86,30 +148,41 @@ export const SettingsPanel: Component<PluginSettingsProps> = (props) => {
                     <input
                       type="checkbox"
                       checked={enabled}
-                      onInput={(event) => patch("mcp", server.id, event.currentTarget.checked)}
+                      onInput={(event) =>
+                        patch("mcp", server.id, event.currentTarget.checked)
+                      }
                     />
                     <span class="sfk-toggle-track" aria-hidden="true" />
                   </span>
                 </label>
-              )
+              );
             }}
           </For>
         </div>
       </section>
 
       <section class="sfk-card" aria-labelledby="sfk-runtime-title">
-        <h3 id="sfk-runtime-title" class="sfk-section-title">Runtime</h3>
-        <p class="sfk-section-desc">When and how long MCP servers are allowed to start.</p>
+        <h3 id="sfk-runtime-title" class="sfk-section-title">
+          Runtime
+        </h3>
+        <p class="sfk-section-desc">
+          When and how long MCP servers are allowed to start.
+        </p>
         <div class="sfk-rows">
           <label class="sfk-row">
             <span class="sfk-row-text">
               <span class="sfk-row-title">Startup mode</span>
-              <span class="sfk-row-desc">Lazy avoids downloading packages until a server is actually used.</span>
+              <span class="sfk-row-desc">
+                Lazy avoids downloading packages until a server is actually
+                used.
+              </span>
             </span>
             <select
               class="sfk-select"
               value={readString(mcp(), "startup", "lazy")}
-              onInput={(event) => patch("mcp", "startup", event.currentTarget.value)}
+              onInput={(event) =>
+                patch("mcp", "startup", event.currentTarget.value)
+              }
             >
               <option value="lazy">Lazy</option>
               <option value="manual">Manual</option>
@@ -119,7 +192,9 @@ export const SettingsPanel: Component<PluginSettingsProps> = (props) => {
           <label class="sfk-row">
             <span class="sfk-row-text">
               <span class="sfk-row-title">Timeout</span>
-              <span class="sfk-row-desc">Maximum wait time for MCP/setup commands.</span>
+              <span class="sfk-row-desc">
+                Maximum wait time for MCP/setup commands.
+              </span>
             </span>
             <input
               class="sfk-input sfk-input--number"
@@ -127,26 +202,39 @@ export const SettingsPanel: Component<PluginSettingsProps> = (props) => {
               min="5000"
               step="5000"
               value={readNumber(mcp(), "timeoutMs", 120000)}
-              onInput={(event) => patch("mcp", "timeoutMs", Number(event.currentTarget.value))}
+              onInput={(event) =>
+                patch("mcp", "timeoutMs", Number(event.currentTarget.value))
+              }
             />
           </label>
         </div>
       </section>
 
       <section class="sfk-card" aria-labelledby="sfk-setup-title">
-        <h3 id="sfk-setup-title" class="sfk-section-title">Setup</h3>
-        <p class="sfk-section-desc">How agents should behave when project tooling is missing.</p>
+        <h3 id="sfk-setup-title" class="sfk-section-title">
+          Setup
+        </h3>
+        <p class="sfk-section-desc">
+          How agents should behave when project tooling is missing.
+        </p>
         <div class="sfk-rows">
           <label class="sfk-row">
             <span class="sfk-row-text">
-              <span class="sfk-row-title">Prompt before running setup commands</span>
-              <span class="sfk-row-desc">Agents ask for confirmation instead of running shell setup automatically.</span>
+              <span class="sfk-row-title">
+                Prompt before running setup commands
+              </span>
+              <span class="sfk-row-desc">
+                Agents ask for confirmation instead of running shell setup
+                automatically.
+              </span>
             </span>
             <span class="sfk-toggle">
               <input
                 type="checkbox"
                 checked={readBool(setup(), "autoPrompt", true)}
-                onInput={(event) => patch("setup", "autoPrompt", event.currentTarget.checked)}
+                onInput={(event) =>
+                  patch("setup", "autoPrompt", event.currentTarget.checked)
+                }
               />
               <span class="sfk-toggle-track" aria-hidden="true" />
             </span>
@@ -155,12 +243,17 @@ export const SettingsPanel: Component<PluginSettingsProps> = (props) => {
           <label class="sfk-row">
             <span class="sfk-row-text">
               <span class="sfk-row-title">Visual verification</span>
-              <span class="sfk-row-desc">How strongly frontend tasks should rely on screenshots and browser checks.</span>
+              <span class="sfk-row-desc">
+                How strongly frontend tasks should rely on screenshots and
+                browser checks.
+              </span>
             </span>
             <select
               class="sfk-select"
               value={readString(setup(), "visualVerification", "smoke")}
-              onInput={(event) => patch("setup", "visualVerification", event.currentTarget.value)}
+              onInput={(event) =>
+                patch("setup", "visualVerification", event.currentTarget.value)
+              }
             >
               <option value="off">Off</option>
               <option value="smoke">Smoke</option>
@@ -176,10 +269,10 @@ export const SettingsPanel: Component<PluginSettingsProps> = (props) => {
         </button>
       </footer>
     </div>
-  )
-}
+  );
+};
 
-export default SettingsPanel
+export default SettingsPanel;
 
 function styleSheet(): string {
   return `
@@ -379,5 +472,5 @@ function styleSheet(): string {
     @media (prefers-reduced-motion: reduce) {
       .sfk-toggle-track, .sfk-toggle-track::after, .sfk-reset { transition: none; }
     }
-  `
+  `;
 }

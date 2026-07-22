@@ -8,14 +8,13 @@
     "typecheck": "tsc --noEmit",
     "sync:skills": "bash scripts/update.sh",
     "verify:skills": "bun run scripts/verify-skill-bundles.ts",
-    "validate:manifest": "bun run scripts/validate-manifest.ts",
     "validate:plugin": "synergy-plugin validate --runtime-discovery",
     "build:plugin": "synergy-plugin build",
     "pack:plugin": "synergy-plugin pack",
     "sign:plugin": "synergy-plugin sign",
     "entry:plugin": "synergy-plugin entry",
     "publish:market": "synergy-plugin publish-market --repo https://github.com/EricSanchezok/synergy-frontend-kit",
-    "release:check": "bun run verify:skills && bun run validate:manifest && bun run typecheck && bun test && bun run validate:plugin && bun run build:plugin && bun run pack:plugin"
+    "release:check": "bun run verify:skills && bun run typecheck && bun test && bun run validate:plugin && bun run build:plugin && bun run pack:plugin"
   },
   "peerDependencies": {
     "@ericsanchezok/synergy-plugin": "^3.0.0",

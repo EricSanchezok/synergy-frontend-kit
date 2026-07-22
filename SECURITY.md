@@ -35,7 +35,7 @@ MCP servers are lazy-started and version pinned:
 - `@layoutdesign/context@0.15.3`
 - `@playwright/mcp@0.0.76`
 
-Do not change these back to `@latest` in committed manifest or setup code. If a version changes, update `plugin.json`, `src/setup.ts`, README, and release notes together.
+Do not change these back to `@latest` in committed API3 definitions or setup code. If a version changes, update `src/index.ts`, `src/setup.ts`, README, and release notes together.
 
 ## Skill Bundles
 

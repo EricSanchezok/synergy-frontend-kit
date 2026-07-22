@@ -1,104 +1,93 @@
 #!/usr/bin/env bun
-/**
- * Reads SKILL.md YAML frontmatter and syncs public skill metadata into
- * src/index.ts and plugin.json. Called by scripts/update.sh after upstream sync.
- */
-import { readFileSync, writeFileSync } from "node:fs"
-import { join } from "node:path"
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 interface SkillSource {
-  name: string
+  name: string;
 }
 
 interface SourcesFile {
-  skills: SkillSource[]
+  skills: SkillSource[];
 }
 
 interface SkillEntry {
-  name: string
-  description: string
-  dir: string
+  name: string;
+  description: string;
+  dir: string;
 }
 
-const ROOT = join(import.meta.dir, "..")
-const SKILLS_DIR = join(ROOT, "skills")
-const INDEX_TS = join(ROOT, "src", "index.ts")
-const PLUGIN_JSON_PATH = join(ROOT, "plugin.json")
-const SOURCES_PATH = join(ROOT, "skills.sources.json")
+const ROOT = join(import.meta.dir, "..");
+const SKILLS_DIR = join(ROOT, "skills");
+const SKILLS_TS = join(ROOT, "src", "skills.ts");
+const SOURCES_PATH = join(ROOT, "skills.sources.json");
 
 function parseDescription(frontmatter: string): string {
-  const lines = frontmatter.split("\n")
-  const idx = lines.findIndex((line) => /^description:/.test(line))
-  if (idx === -1) return ""
-
-  const afterColon = lines[idx].replace(/^description:\s*/, "")
-
+  const lines = frontmatter.split("\n");
+  const index = lines.findIndex((line) => /^description:/.test(line));
+  if (index === -1) return "";
+  const afterColon = lines[index].replace(/^description:\s*/, "");
   if (afterColon === ">" || afterColon === "|") {
-    const parts: string[] = []
-    for (let i = idx + 1; i < lines.length; i++) {
-      const line = lines[i]
-      if (!/^\s/.test(line)) break
-      parts.push(line.trim())
+    const parts: string[] = [];
+    for (let current = index + 1; current < lines.length; current++) {
+      const line = lines[current];
+      if (!/^\s/.test(line)) break;
+      parts.push(line.trim());
     }
-    return parts.join(" ").replace(/\s+/g, " ").trim()
+    return parts.join(" ").replace(/\s+/g, " ").trim();
   }
-
-  return stripOuterQuotes(afterColon.trim())
+  return stripOuterQuotes(afterColon.trim());
 }
 
 function stripOuterQuotes(value: string): string {
-  if (value.length < 2) return value
-  const first = value[0]
-  const last = value[value.length - 1]
-  return (first === `"` || first === "'") && first === last ? value.slice(1, -1) : value
+  if (value.length < 2) return value;
+  const first = value[0];
+  const last = value[value.length - 1];
+  return (first === `"` || first === "'") && first === last
+    ? value.slice(1, -1)
+    : value;
 }
 
-function extractDescription(mdPath: string): string {
-  const content = readFileSync(mdPath, "utf-8")
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
-  if (!match) throw new Error(`No frontmatter in ${mdPath}`)
-  return parseDescription(match[1])
-}
-
-function escapeTsString(value: string): string {
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
+function extractDescription(path: string): string {
+  const content = readFileSync(path, "utf-8");
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) throw new Error(`No frontmatter in ${path}`);
+  return parseDescription(match[1]);
 }
 
 function renderSkillEntry(entry: SkillEntry): string {
-  const description = escapeTsString(entry.description)
-  return `  {\n    name: "${entry.name}",\n    description:\n      "${description}",\n    dir: "${entry.dir}",\n  }`
+  return `  {\n    name: ${JSON.stringify(entry.name)},\n    description:\n      ${JSON.stringify(entry.description)},\n    dir: ${JSON.stringify(entry.dir)},\n  }`;
 }
 
-function replaceBetweenMarkers(content: string, startMarker: string, endMarker: string, replacement: string): string {
-  const startIdx = content.indexOf(startMarker)
-  const endIdx = content.indexOf(endMarker)
-  if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
-    throw new Error(`Guard comments not found: ${startMarker} / ${endMarker}`)
-  }
-
-  return content.slice(0, startIdx) + replacement + content.slice(endIdx + endMarker.length)
+function replaceBetweenMarkers(
+  content: string,
+  startMarker: string,
+  endMarker: string,
+  replacement: string,
+): string {
+  const start = content.indexOf(startMarker);
+  const end = content.indexOf(endMarker);
+  if (start === -1 || end === -1 || end <= start)
+    throw new Error(`Guard comments not found: ${startMarker} / ${endMarker}`);
+  return (
+    content.slice(0, start) +
+    replacement +
+    content.slice(end + endMarker.length)
+  );
 }
 
-const sources = JSON.parse(readFileSync(SOURCES_PATH, "utf-8")) as SourcesFile
+const sources = JSON.parse(readFileSync(SOURCES_PATH, "utf-8")) as SourcesFile;
 const entries = sources.skills.map((source) => ({
   name: source.name,
   description: extractDescription(join(SKILLS_DIR, source.name, "SKILL.md")),
   dir: `skills/${source.name}`,
-}))
-
-const indexTs = readFileSync(INDEX_TS, "utf-8")
-const startMarker = "// === SKILLS:"
-const endMarker = "// === END SKILLS ==="
-const replacement = `${startMarker} generated by scripts/sync-descriptions.ts; do not edit manually ===
-export const SKILL_ENTRIES: PluginSkill[] = [
-${entries.map(renderSkillEntry).join(",\n")},
-]
-${endMarker}`
-writeFileSync(INDEX_TS, replaceBetweenMarkers(indexTs, startMarker, endMarker, replacement), "utf-8")
-
-const plugin = JSON.parse(readFileSync(PLUGIN_JSON_PATH, "utf-8"))
-plugin.contributes ??= {}
-plugin.contributes.skills = entries
-writeFileSync(PLUGIN_JSON_PATH, `${JSON.stringify(plugin, null, 2)}\n`, "utf-8")
-
-console.log(`Updated ${entries.length} skill descriptions in src/index.ts and plugin.json`)
+}));
+const startMarker = "// === SKILLS:";
+const endMarker = "// === END SKILLS ===";
+const replacement = `${startMarker} generated by scripts/sync-descriptions.ts; do not edit manually ===\nexport const SKILL_ENTRIES: PluginSkill[] = [\n${entries.map(renderSkillEntry).join(",\n")},\n]\n${endMarker}`;
+const current = readFileSync(SKILLS_TS, "utf-8");
+writeFileSync(
+  SKILLS_TS,
+  replaceBetweenMarkers(current, startMarker, endMarker, replacement),
+  "utf-8",
+);
+console.log(`Updated ${entries.length} skill descriptions in src/skills.ts`);

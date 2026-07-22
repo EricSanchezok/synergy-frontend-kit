@@ -4,7 +4,7 @@ This document is the maintainer checklist for publishing Synergy Frontend Kit as
 
 ## Prerequisites
 
-- Synergy Plugin Kit `>=2.4.4`
+- Synergy Plugin Kit with API3 `definePlugin()` support
 - Bun `>=1.2.0`
 - `gh` authenticated for release uploads and PR creation, or be ready to follow the printed manual fallback commands
 - GitHub write access to `EricSanchezok/synergy-frontend-kit`
@@ -34,7 +34,6 @@ Review all changed files, especially bundled `scripts/` directories.
 ```bash
 bun install
 bun run verify:skills
-bun run validate:manifest
 bun test
 bun run typecheck
 bun run validate:plugin
@@ -198,5 +197,4 @@ Confirm:
 - skills load
 - `synergy synergy-frontend-kit setup --dry-run --json` works
 - settings section renders
-- Design Readiness panel renders
 - MCP servers remain lazy until used
