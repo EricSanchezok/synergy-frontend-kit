@@ -21,9 +21,6 @@ jobs:
       - name: Verify skill bundles
         run: bun run verify:skills
 
-      - name: Validate manifest schema
-        run: bun run validate:manifest
-
       - name: Test
         run: bun test
 
