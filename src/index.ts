@@ -31,15 +31,16 @@ export const FrontendKitPlugin = definePlugin({
     "accessibility",
   ],
   assets: [{ source: "icons", target: "icons" }],
-  capabilities: [capability("settings.write"), capability("shell.execute")],
+  capabilities: [capability("shell.execute")],
   contributions: [
     ...SKILL_ENTRIES.map((entry) => skill({ id: entry.name, skill: entry })),
     mcp({
       id: "shadcn",
+      enabledWhen: { setting: "shadcn", equals: true },
       server: {
         type: "local",
         command: ["npx", "-y", "shadcn@4.11.0", "mcp"],
-        startup: "lazy",
+        startup: "eager",
         required: false,
         connectTimeout: 10_000,
         listTimeout: 15_000,
@@ -58,10 +59,11 @@ export const FrontendKitPlugin = definePlugin({
     }),
     mcp({
       id: "layout-context",
+      enabledWhen: { setting: "layoutContext", equals: true },
       server: {
         type: "local",
         command: ["npx", "-y", "@layoutdesign/context@0.15.3", "serve"],
-        startup: "lazy",
+        startup: "eager",
         required: false,
         connectTimeout: 10_000,
         listTimeout: 15_000,
@@ -79,10 +81,11 @@ export const FrontendKitPlugin = definePlugin({
     }),
     mcp({
       id: "playwright",
+      enabledWhen: { setting: "playwright", equals: true },
       server: {
         type: "local",
         command: ["npx", "-y", "@playwright/mcp@0.0.76"],
-        startup: "lazy",
+        startup: "eager",
         required: false,
         connectTimeout: 10_000,
         listTimeout: 15_000,
@@ -103,35 +106,27 @@ export const FrontendKitPlugin = definePlugin({
       label: "Frontend Kit",
       icon: "palette",
       group: "plugins",
-      requires: ["settings.write"],
-      component: { source: "src/ui.tsx", exportName: "SettingsPanel" },
       formSchema: {
         type: "object",
+        description: "MCP servers start automatically unless you turn them off here.",
         properties: {
-          mcp: {
-            type: "object",
-            properties: {
-              shadcn: { type: "boolean", default: true },
-              layoutContext: { type: "boolean", default: true },
-              playwright: { type: "boolean", default: true },
-              startup: {
-                type: "string",
-                enum: ["lazy", "manual"],
-                default: "lazy",
-              },
-              timeoutMs: { type: "number", default: 120_000 },
-            },
+          shadcn: {
+            type: "boolean",
+            default: true,
+            title: "shadcn/ui",
+            description: "Component registry and code generation · v4.11.0",
           },
-          setup: {
-            type: "object",
-            properties: {
-              autoPrompt: { type: "boolean", default: true },
-              visualVerification: {
-                type: "string",
-                enum: ["off", "smoke", "strict"],
-                default: "smoke",
-              },
-            },
+          layoutContext: {
+            type: "boolean",
+            default: true,
+            title: "layout.design",
+            description: "Design-system context and linting · v0.15.3",
+          },
+          playwright: {
+            type: "boolean",
+            default: true,
+            title: "Playwright MCP",
+            description: "Screenshots and browser verification · v0.0.76",
           },
         },
         additionalProperties: false,

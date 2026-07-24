@@ -2,7 +2,7 @@
 
 Official frontend capability kit for Synergy agents.
 
-It bundles curated design skills, pinned MCP servers, setup automation, and a trusted Settings surface. The goal is simple: Synergy should build frontend with real taste, real components, and real verification instead of default AI-looking UI.
+It bundles curated design skills, pinned MCP servers, setup automation, and native Synergy settings. The goal is simple: Synergy should build frontend with real taste, real components, and real verification instead of default AI-looking UI.
 
 ## Requirements
 
@@ -45,7 +45,7 @@ The plugin exposes 10 bundled Agent Skills:
 
 ### MCP Servers
 
-MCP startup is lazy by default and versions are pinned for reproducibility:
+MCP servers are enabled and started automatically by default. Each server can be turned off from the Frontend Kit settings page. Versions are pinned for reproducibility:
 
 | Server         |  Version | Command                                     |
 | -------------- | -------: | ------------------------------------------- |
@@ -65,7 +65,7 @@ The setup command initializes shadcn/ui, layout.design, and Playwright Chromium 
 
 ### UI
 
-The plugin contributes a `Frontend Kit` Settings section. It does not register a Workbench panel.
+The plugin contributes a native `Frontend Kit` Settings section with one switch per MCP server. It does not register a Workbench panel.
 
 ## Non-Synergy Skill Install
 
@@ -83,17 +83,9 @@ Synergy plugin config defaults:
 {
   "pluginConfig": {
     "synergy-frontend-kit": {
-      "mcp": {
-        "shadcn": true,
-        "layoutContext": true,
-        "playwright": true,
-        "startup": "lazy",
-        "timeoutMs": 120000,
-      },
-      "setup": {
-        "autoPrompt": true,
-        "visualVerification": "smoke",
-      },
+      "shadcn": true,
+      "layoutContext": true,
+      "playwright": true,
     },
   },
 }
@@ -150,7 +142,7 @@ That command validates, builds, packs, signs, uploads or checks GitHub Release a
 
 See [SECURITY.md](SECURITY.md).
 
-This plugin declares `shell.execute` for setup commands and `settings.write` for its trusted Settings surface. MCP server processes are host-owned declarative contributions.
+This plugin declares `shell.execute` only for setup commands.
 
 ## License
 

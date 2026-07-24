@@ -24,7 +24,6 @@
     "@ericsanchezok/synergy-plugin-kit": "^3.0.0",
     "@ericsanchezok/synergy-plugin": "^3.0.0",
     "@types/bun": "^1.3.14",
-    "solid-js": "^1.9.10",
     "typescript": "^6.0.3",
     "zod": "^4.4.3"
   }

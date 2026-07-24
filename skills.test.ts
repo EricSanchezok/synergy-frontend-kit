@@ -72,22 +72,52 @@ test("API3 definition contributes all skills in source order", () => {
   expect(SKILL_ENTRIES.map((entry) => entry.name)).toEqual(expectedSkills);
 });
 
-test("API3 definition contains MCP, CLI, and Settings without Workbench", () => {
+test("API3 definition contains eager settings-gated MCP, CLI, and native Settings without Workbench", () => {
+  const mcpContributions = FrontendKitPlugin.contributions.filter(
+    (item) => item.kind === "mcp",
+  );
+  expect(mcpContributions.map((item) => item.id)).toEqual([
+    "shadcn",
+    "layout-context",
+    "playwright",
+  ]);
   expect(
-    FrontendKitPlugin.contributions
-      .filter((item) => item.kind === "mcp")
-      .map((item) => item.id),
-  ).toEqual(["shadcn", "layout-context", "playwright"]);
+    mcpContributions.map((item) => ({
+      startup: item.server.startup,
+      enabledWhen: item.enabledWhen,
+    })),
+  ).toEqual([
+    {
+      startup: "eager",
+      enabledWhen: { setting: "shadcn", equals: true },
+    },
+    {
+      startup: "eager",
+      enabledWhen: { setting: "layoutContext", equals: true },
+    },
+    {
+      startup: "eager",
+      enabledWhen: { setting: "playwright", equals: true },
+    },
+  ]);
   expect(
     FrontendKitPlugin.contributions.some(
       (item) => item.kind === "cli.command" && item.id === "setup",
     ),
   ).toBe(true);
-  expect(
-    FrontendKitPlugin.contributions.some(
-      (item) => item.kind === "ui.settings" && item.id === "frontend-kit",
-    ),
-  ).toBe(true);
+  const settingsContribution = FrontendKitPlugin.contributions.find(
+    (item) => item.kind === "ui.settings" && item.id === "frontend-kit",
+  ) as Extract<
+    (typeof FrontendKitPlugin.contributions)[number],
+    { kind: "ui.settings" }
+  > | undefined;
+  expect(settingsContribution).toBeDefined();
+  expect(settingsContribution).not.toHaveProperty("component");
+  expect(settingsContribution?.formSchema?.properties).toEqual({
+    shadcn: expect.objectContaining({ type: "boolean", default: true }),
+    layoutContext: expect.objectContaining({ type: "boolean", default: true }),
+    playwright: expect.objectContaining({ type: "boolean", default: true }),
+  });
   expect(
     FrontendKitPlugin.contributions.some(
       (item) => item.kind === "ui.workbenchPanel",
