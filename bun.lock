@@ -5,14 +5,14 @@
     "": {
       "name": "synergy-frontend-kit",
       "devDependencies": {
-        "@ericsanchezok/synergy-plugin": "^3.0.0",
-        "@ericsanchezok/synergy-plugin-kit": "^3.0.2",
+        "@ericsanchezok/synergy-plugin": "^3.0.6",
+        "@ericsanchezok/synergy-plugin-kit": "^3.0.6",
         "@types/bun": "^1.3.14",
         "typescript": "^6.0.3",
         "zod": "^4.4.3",
       },
       "peerDependencies": {
-        "@ericsanchezok/synergy-plugin": "^3.0.0",
+        "@ericsanchezok/synergy-plugin": "^3.0.6",
         "zod": "^4.4.3",
       },
     },
@@ -74,11 +74,11 @@
 
     "@babel/types": ["@babel/types@7.29.7", "", { "dependencies": { "@babel/helper-string-parser": "^7.29.7", "@babel/helper-validator-identifier": "^7.29.7" } }, "sha512-4zBIxpPzowiZpusoFkyGVwakdRJUyuH5PxQ/PrqghfdFWWasvnCdPfQXHrenDai+gyLARulZjZowCOj6fjT4pA=="],
 
-    "@ericsanchezok/synergy-plugin": ["@ericsanchezok/synergy-plugin@3.0.0", "", { "dependencies": { "@ericsanchezok/synergy-sdk": "3.0.0" }, "peerDependencies": { "zod": ">=4.0.0" } }, "sha512-0rx0vNQQkq8EtFdyZonaBRmtLGWQlxMYl94VVMzkGr9LOJBwevEnO9ZpYVgyKZNUFxPPf8V/kIvvSjoOCCUqsw=="],
+    "@ericsanchezok/synergy-plugin": ["@ericsanchezok/synergy-plugin@3.0.6", "", { "dependencies": { "@ericsanchezok/synergy-sdk": "3.0.6" }, "peerDependencies": { "zod": ">=4.0.0" } }, "sha512-gi+iVrGRGc4dCsZSaVCd71h7Rlgv0dp4/z4dxJjVfEFShcc9jtawso6XBPR7ztc7iDpN7bLB1/+6ypQo661sog=="],
 
-    "@ericsanchezok/synergy-plugin-kit": ["@ericsanchezok/synergy-plugin-kit@3.0.2", "", { "dependencies": { "@babel/core": "7.28.4", "@babel/preset-typescript": "7.28.5", "@ericsanchezok/synergy-plugin": "3.0.2", "babel-preset-solid": "1.9.10", "yargs": "18.0.0" }, "peerDependencies": { "zod": ">=4.0.0" }, "bin": { "synergy-plugin": "dist/cli.js", "synergy-plugin-kit": "dist/cli.js" } }, "sha512-1MDDnnxHSSdlpWYb8DOgY/VSE13+fO2prmMeiHC2bbsVpYSA0R2mpL2EIC8erjLRzK92MYG/EWCMZ9/NRYTtHw=="],
+    "@ericsanchezok/synergy-plugin-kit": ["@ericsanchezok/synergy-plugin-kit@3.0.6", "", { "dependencies": { "@babel/core": "7.28.4", "@babel/preset-typescript": "7.28.5", "@ericsanchezok/synergy-plugin": "3.0.6", "babel-preset-solid": "1.9.10", "yargs": "18.0.0" }, "peerDependencies": { "zod": ">=4.0.0" }, "bin": { "synergy-plugin": "dist/cli.js", "synergy-plugin-kit": "dist/cli.js" } }, "sha512-WTDQhLtWEJnv5f0hWApsKKW2B/51rNZ8WLWBVJS3+oemIIt0W6Pix51D5g4r9C5F3U9/dvLp+6B+kShYXkc0tw=="],
 
-    "@ericsanchezok/synergy-sdk": ["@ericsanchezok/synergy-sdk@3.0.0", "", {}, "sha512-NsXg+AkuxpyAdXTVYeNUw/mVspE6rZKOelpcr61NmRN7HL+eRoGaTTsfGJPo2exr4oiD8t51YH1Yy28CIrAJ9w=="],
+    "@ericsanchezok/synergy-sdk": ["@ericsanchezok/synergy-sdk@3.0.6", "", {}, "sha512-48ItgHp6x8Wi2Tj82FhLiHeSvxT9YOnHAvgEjcl6jmp4dvLLcQq51kIV3xLTmFF9iayLGjYsERWxE/Mv24rNZQ=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.0", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="],
 
@@ -172,10 +172,6 @@
 
     "zod": ["zod@4.4.3", "", {}, "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="],
 
-    "@ericsanchezok/synergy-plugin-kit/@ericsanchezok/synergy-plugin": ["@ericsanchezok/synergy-plugin@3.0.2", "", { "dependencies": { "@ericsanchezok/synergy-sdk": "3.0.2" }, "peerDependencies": { "zod": ">=4.0.0" } }, "sha512-78yuiTWQUssrjtZ/Zl4BT209sfZc2gb0u9/0hVj2TA8SLFdC1MiWgwNB0o6tpncwCmJsj1SrLofbw7mJZEuhXg=="],
-
     "babel-plugin-jsx-dom-expressions/@babel/helper-module-imports": ["@babel/helper-module-imports@7.18.6", "", { "dependencies": { "@babel/types": "^7.18.6" } }, "sha512-0NFvs3VkuSYbFi1x2Vd6tKrywq+z/cLeYC/RJNFrIX/30Bf5aiGYbtvGXolEktzJH8o5E5KJ3tT+nkxuuZFVlA=="],
-
-    "@ericsanchezok/synergy-plugin-kit/@ericsanchezok/synergy-plugin/@ericsanchezok/synergy-sdk": ["@ericsanchezok/synergy-sdk@3.0.2", "", {}, "sha512-fCk1nwhzVFYlbyfGf04I+blhcHLEfdDwICvIFHPPvZ4BFlP6K8TwHkkXCGDqQQjQTtdunSgmS+Gc4LEjVpVM1A=="],
   }
 }
