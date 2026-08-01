@@ -6,7 +6,7 @@ It bundles curated design skills, pinned MCP servers, setup automation, and nati
 
 ## Requirements
 
-- Synergy `>=3.0.0`
+- Synergy `>=3.0.11`
 - Bun `>=1.2.0`
 - Node.js and `npx` for MCP servers and setup commands
 
@@ -107,7 +107,7 @@ The sync command:
 1. Clones upstream repositories.
 2. Copies full skill bundles, including references, scripts, assets, and licenses.
 3. Normalizes public skill names to this plugin's stable names.
-4. Syncs descriptions into the typed API3 definition in `src/skills.ts`.
+4. Syncs descriptions into the typed Plugin API 4 definition in `src/skills.ts`.
 5. Runs bundle verification.
 
 ## Verification
@@ -122,7 +122,7 @@ bun run build:plugin
 bun run pack:plugin
 ```
 
-Plugin authoring commands come from `@ericsanchezok/synergy-plugin-kit >=3.0.0`. Use `synergy-plugin ...` or the package scripts for validation, build, pack, sign, and marketplace publishing. Use the Synergy CLI for runtime install and local registry smoke tests.
+Plugin authoring commands come from `@ericsanchezok/synergy-plugin-kit >=4.0.0`. Use `synergy-plugin ...` or the package scripts for validation, build, pack, sign, and marketplace publishing. Use the Synergy CLI for runtime install and local registry smoke tests.
 
 ## Official Release
 
@@ -142,7 +142,7 @@ That command validates, builds, packs, signs, uploads or checks GitHub Release a
 
 See [SECURITY.md](SECURITY.md).
 
-This plugin declares `shell.execute` only for setup commands.
+This plugin declares `shell.execute` as the host-access ceiling, and only the user-invoked setup command requires it. Skills, settings, and MCP contributions do not inherit command execution access.
 
 ## License
 

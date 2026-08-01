@@ -64,7 +64,12 @@ describe("SKILL.md frontmatter", () => {
   }
 });
 
-test("API3 definition contributes all skills in source order", () => {
+test("Plugin API 4 definition contributes all skills in source order", () => {
+  expect(FrontendKitPlugin).toMatchObject({
+    version: "0.4.0",
+    compatibility: { synergy: ">=3.0.11" },
+    capabilities: [{ id: "shell.execute" }],
+  });
   const actual = FrontendKitPlugin.contributions
     .filter((contribution) => contribution.kind === "skill")
     .map((contribution) => contribution.id);
@@ -72,7 +77,7 @@ test("API3 definition contributes all skills in source order", () => {
   expect(SKILL_ENTRIES.map((entry) => entry.name)).toEqual(expectedSkills);
 });
 
-test("API3 definition contains eager settings-gated MCP, CLI, and native Settings without Workbench", () => {
+test("Plugin API 4 definition contains eager settings-gated MCP, CLI, and native Settings without Workbench", () => {
   const mcpContributions = FrontendKitPlugin.contributions.filter(
     (item) => item.kind === "mcp",
   );
@@ -105,6 +110,11 @@ test("API3 definition contains eager settings-gated MCP, CLI, and native Setting
       (item) => item.kind === "cli.command" && item.id === "setup",
     ),
   ).toBe(true);
+  expect(
+    FrontendKitPlugin.contributions
+      .filter((item) => item.requires?.includes("shell.execute"))
+      .map((item) => `${item.kind}:${item.id}`),
+  ).toEqual(["cli.command:setup"]);
   const settingsContribution = FrontendKitPlugin.contributions.find(
     (item) => item.kind === "ui.settings" && item.id === "frontend-kit",
   ) as Extract<
