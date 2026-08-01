@@ -26,6 +26,7 @@ jobs:
           BUN_INSTALL: ${{ runner.temp }}/synergy-bun
         run: |
           bun install --frozen-lockfile --cwd .synergy-api
+          bun run --cwd .synergy-api/packages/plugin-kit build
           bun pm pkg delete 'peerDependencies.@ericsanchezok/synergy-plugin' 'devDependencies.@ericsanchezok/synergy-plugin' 'devDependencies.@ericsanchezok/synergy-plugin-kit'
           bun install
           (cd .synergy-api/packages/sdk/js && bun link)
