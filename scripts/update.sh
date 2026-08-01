@@ -46,7 +46,7 @@ fi
 
 if ! $QUIET; then
   echo ""
-  echo "Syncing skill descriptions to the API3 definition..."
+  echo "Syncing skill descriptions to the Plugin API 4 definition..."
 fi
 bun run "$SCRIPT_DIR/sync-descriptions.ts"
 
