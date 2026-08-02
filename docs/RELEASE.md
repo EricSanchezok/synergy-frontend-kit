@@ -4,7 +4,7 @@ This document is the maintainer checklist for publishing Synergy Frontend Kit as
 
 ## Prerequisites
 
-- Synergy Plugin SDK and Kit 4.0 or newer
+- Synergy Plugin SDK and Kit 3.0.11 or newer (the packages follow the Synergy product version; generated artifacts use Plugin API 4.0)
 - Bun `>=1.2.0`
 - `gh` authenticated for release uploads and PR creation, or be ready to follow the printed manual fallback commands
 - GitHub write access to `EricSanchezok/synergy-frontend-kit`
