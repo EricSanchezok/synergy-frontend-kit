@@ -14,7 +14,7 @@
     "sign:plugin": "synergy-plugin sign",
     "entry:plugin": "synergy-plugin entry",
     "publish:market": "synergy-plugin publish-market --repo https://github.com/EricSanchezok/synergy-frontend-kit",
-    "release:check": "bun run verify:skills && bun run typecheck && bun test && bun run validate:plugin && bun run build:plugin && bun run pack:plugin"
+    "release:check": "bun run verify:skills && bun run typecheck && bun test && bun run build:plugin && bun run validate:plugin && bun run pack:plugin"
   },
   "peerDependencies": {
     "@ericsanchezok/synergy-plugin": "^3.0.11",
