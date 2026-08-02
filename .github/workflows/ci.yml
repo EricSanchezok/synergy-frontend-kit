@@ -10,29 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/checkout@v4
-        with:
-          repository: SII-Holos/synergy
-          ref: dev
-          path: .synergy-api
-
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - name: Link Plugin API 4 from Synergy dev
-        env:
-          BUN_INSTALL: ${{ runner.temp }}/synergy-bun
-        run: |
-          bun install --frozen-lockfile --cwd .synergy-api
-          bun run --cwd .synergy-api/packages/plugin-kit build
-          bun pm pkg delete 'peerDependencies.@ericsanchezok/synergy-plugin' 'devDependencies.@ericsanchezok/synergy-plugin' 'devDependencies.@ericsanchezok/synergy-plugin-kit'
-          bun install
-          (cd .synergy-api/packages/sdk/js && bun link)
-          (cd .synergy-api/packages/plugin && bun link)
-          (cd .synergy-api/packages/plugin-kit && bun link)
-          bun link @ericsanchezok/synergy-sdk @ericsanchezok/synergy-plugin @ericsanchezok/synergy-plugin-kit
+      - run: bun install --frozen-lockfile
 
       - name: Verify skill bundles
         run: bun run verify:skills

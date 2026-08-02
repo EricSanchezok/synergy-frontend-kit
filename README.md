@@ -122,7 +122,7 @@ bun run build:plugin
 bun run pack:plugin
 ```
 
-Plugin authoring commands come from `@ericsanchezok/synergy-plugin-kit >=4.0.0`. Use `synergy-plugin ...` or the package scripts for validation, build, pack, sign, and marketplace publishing. Use the Synergy CLI for runtime install and local registry smoke tests.
+Plugin authoring commands come from `@ericsanchezok/synergy-plugin-kit >=3.0.11`. The package version follows the Synergy product release, while generated artifacts keep Plugin API `4.0`. Use `synergy-plugin ...` or the package scripts for validation, build, pack, sign, and marketplace publishing. Use the Synergy CLI for runtime install and local registry smoke tests.
 
 ## Official Release
 
