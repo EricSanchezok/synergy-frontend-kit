@@ -5,3 +5,4 @@ dist/
 *.synergy-plugin.tgz.sig
 synergy.tar.gz
 .synergy-bin/
+.synergy/
