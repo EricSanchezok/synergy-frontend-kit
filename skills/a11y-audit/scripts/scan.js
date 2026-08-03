@@ -2,19 +2,18 @@
 /*
 skill_bundle: a11y-audit
 file_role: script
-version: 5
-version_date: 2026-06-04
-previous_version: 4
+version: 8
+version_date: 2026-07-21
+previous_version: 7
 change_summary: >
-  Recurses into <sitemapindex> documents so --sitemap works against
-  large sites that split their sitemap into per-section files
-  (publedge.org, etc.). Guards against cycles with a 50-document cap.
-  find/replace runs before child fetches so the rewritten host applies
-  recursively; exclude only filters leaf URLs.
+  Adds discover-plan input, URL validation and deduplication, pinned
+  Puppeteer installation, bounded per-page failure reporting, and reliable
+  browser cleanup. Removes the non-executing Lighthouse command placeholder.
 */
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { pathToFileURL } = require('url');
 const { execSync, spawnSync } = require('child_process');
 
@@ -44,9 +43,59 @@ function splitCsv(value) {
   return value.split(',').map((entry) => entry.trim()).filter(Boolean);
 }
 
+function validateScanUrl(value) {
+  let parsed;
+  try {
+    parsed = new URL(value);
+  } catch {
+    throw new Error(`Invalid scan URL: ${value}`);
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new Error(`Unsupported scan URL protocol: ${parsed.protocol} (${value})`);
+  }
+  return parsed.href;
+}
+
+function normalizeScanUrls(values) {
+  return [...new Set((values || []).map(validateScanUrl))];
+}
+
+function loadUrlsFromDiscoverPlan(discoverPath) {
+  let plan;
+  try {
+    plan = JSON.parse(fs.readFileSync(path.resolve(discoverPath), 'utf8'));
+  } catch (err) {
+    throw new Error(`Unable to read discover plan ${discoverPath}: ${err.message}`);
+  }
+  if (!Array.isArray(plan.scanList) || plan.scanList.length === 0) {
+    throw new Error(`Discover plan ${discoverPath} must contain a non-empty scanList array.`);
+  }
+  if (!plan.scanList.every((value) => typeof value === 'string')) {
+    throw new Error(`Discover plan ${discoverPath} scanList must contain only URL strings.`);
+  }
+  return normalizeScanUrls(plan.scanList);
+}
+
 function validateBrowserLib(browserLib) {
   if (browserLib === 'puppeteer') return browserLib;
   throw new Error(`Unsupported browser library: ${browserLib}. This bundled script supports puppeteer only.`);
+}
+
+// axe-core rule sets change between releases, so an unpinned auto-install
+// makes repeat audits drift: the same site can gain "new" violations that
+// are really new rules, which corrupts delta reports. Auto-install therefore
+// pins a known-good version. Override with --axe-version <x.y.z|latest> when
+// a newer rule set is deliberately wanted. A project- or global-resolved
+// axe-core still wins over auto-install; the resolved version is recorded in
+// the output JSON either way so report.js can flag cross-version deltas.
+const PINNED_VERSIONS = {
+  'axe-core': '4.12.1',
+  puppeteer: '24.43.1',
+};
+
+function validateAxeVersion(value) {
+  if (value === 'latest' || /^\d+\.\d+\.\d+(-[\w.]+)?$/.test(value)) return value;
+  throw new Error(`Invalid --axe-version: ${value}. Use an exact version (e.g. 4.12.1) or "latest".`);
 }
 
 // ---------------------------------------------------------------------------
@@ -113,6 +162,101 @@ function countViolations(results) {
   return count;
 }
 
+function normalizeRoute(urlValue) {
+  try {
+    const parsed = new URL(urlValue);
+    const pathname = parsed.pathname.replace(/\/{2,}/g, '/');
+    return pathname.length > 1 ? pathname.replace(/\/$/, '') : '/';
+  } catch (_) {
+    return String(urlValue || '').trim();
+  }
+}
+
+function normalizeTarget(target) {
+  const parts = Array.isArray(target) ? target.flat(Infinity) : [target];
+  return parts
+    .map((part) => String(part || '').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .join(' >> ');
+}
+
+function findingFingerprint({ rule, route, target }) {
+  return crypto
+    .createHash('sha256')
+    .update(`${rule}\n${route}\n${target}`)
+    .digest('hex');
+}
+
+function collectFindings(results) {
+  const findings = new Map();
+  for (const result of results || []) {
+    const route = normalizeRoute(result.url);
+    for (const violation of result.axe?.violations || []) {
+      const nodes = Array.isArray(violation.nodes) && violation.nodes.length > 0
+        ? violation.nodes
+        : [{ target: [] }];
+      for (const node of nodes) {
+        const target = normalizeTarget(node.target);
+        const fingerprint = findingFingerprint({ rule: violation.id, route, target });
+        if (!findings.has(fingerprint)) {
+          findings.set(fingerprint, {
+            fingerprint,
+            rule: violation.id,
+            impact: violation.impact || null,
+            route,
+            url: result.url,
+            target,
+          });
+        }
+      }
+    }
+  }
+  return [...findings.values()].sort((a, b) => a.fingerprint.localeCompare(b.fingerprint));
+}
+
+function readBaseline(baselinePath) {
+  const parsed = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+  if (parsed.schema_version !== 1 || !Array.isArray(parsed.findings)) {
+    throw new Error(`Invalid accessibility baseline: ${baselinePath}`);
+  }
+  const valid = parsed.findings.every((finding) => {
+    const fingerprint = typeof finding === 'string' ? finding : finding?.fingerprint;
+    return typeof fingerprint === 'string' && /^[a-f0-9]{64}$/.test(fingerprint);
+  });
+  if (!valid) throw new Error(`Invalid finding fingerprint in accessibility baseline: ${baselinePath}`);
+  return parsed;
+}
+
+function compareBaseline(findings, baseline) {
+  const current = new Map(findings.map((finding) => [finding.fingerprint, finding]));
+  const accepted = new Map(baseline.findings.map((finding) => [
+    typeof finding === 'string' ? finding : finding.fingerprint,
+    finding,
+  ]));
+  const newlyIntroduced = findings.filter((finding) => !accepted.has(finding.fingerprint));
+  const existing = findings.filter((finding) => accepted.has(finding.fingerprint));
+  const resolved = [...accepted.keys()].filter((fingerprint) => !current.has(fingerprint));
+  return {
+    baseline_count: accepted.size,
+    current_count: current.size,
+    existing_count: existing.length,
+    new_count: newlyIntroduced.length,
+    resolved_count: resolved.length,
+    new_findings: newlyIntroduced,
+    resolved_fingerprints: resolved.sort(),
+  };
+}
+
+function buildBaseline(findings, axeVersion) {
+  return {
+    schema_version: 1,
+    generated_at: new Date().toISOString(),
+    axe_version: axeVersion || null,
+    fingerprint_model: 'sha256(rule + normalized route + normalized axe target)',
+    findings,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Dependency resolution
 // ---------------------------------------------------------------------------
@@ -154,7 +298,16 @@ function findPackage(packageName, projectRoot) {
   return null;
 }
 
-function ensureDependency(packageName, projectRoot) {
+function readPkgVersion(packageRoot) {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8'));
+    return typeof pkg.version === 'string' ? pkg.version : null;
+  } catch {
+    return null;
+  }
+}
+
+function ensureDependency(packageName, projectRoot, installVersion) {
   if (!/^(@[a-z0-9._-]+\/)?[a-z0-9._-]+$/i.test(packageName)) {
     console.error(`Invalid package name: ${packageName}`);
     process.exit(1);
@@ -163,8 +316,12 @@ function ensureDependency(packageName, projectRoot) {
   const found = findPackage(packageName, projectRoot);
   if (found) return found;
 
-  // Auto-install to skill-local deps directory
-  console.error(`${packageName} not found — installing to ${SKILL_DEPS_DIR}...`);
+  // Auto-install to skill-local deps directory, pinned when a known-good
+  // version is defined ("latest" falls through to the npm dist-tag).
+  const installSpec = installVersion && installVersion !== 'latest'
+    ? `${packageName}@${installVersion}`
+    : packageName;
+  console.error(`${packageName} not found — installing ${installSpec} to ${SKILL_DEPS_DIR}...`);
   fs.mkdirSync(SKILL_DEPS_DIR, { recursive: true });
 
   // Create a minimal package.json if it doesn't exist
@@ -179,7 +336,7 @@ function ensureDependency(packageName, projectRoot) {
   }
 
   try {
-    const install = spawnSync('npm', ['install', '--prefix', SKILL_DEPS_DIR, packageName], {
+    const install = spawnSync('npm', ['install', '--prefix', SKILL_DEPS_DIR, installSpec], {
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe'],
       timeout: 120000,
@@ -215,20 +372,6 @@ async function loadPuppeteer(packageRoot) {
 }
 
 // ---------------------------------------------------------------------------
-// Lighthouse (optional)
-// ---------------------------------------------------------------------------
-
-function buildLighthouseCommand(url) {
-  return [
-    'npx', 'lighthouse', url,
-    '--output=json', '--output-path=stdout',
-    '--only-categories=accessibility',
-    '--chrome-flags=--headless --no-sandbox',
-    '--quiet',
-  ].join(' ');
-}
-
-// ---------------------------------------------------------------------------
 // axe summary mode
 // ---------------------------------------------------------------------------
 
@@ -255,7 +398,7 @@ function summarizeAxe(axe) {
 async function run() {
   const args = parseArgs(process.argv.slice(2));
   const rootDir = path.resolve(args.root || process.cwd());
-  const urls = splitCsv(args.urls);
+  let urls = splitCsv(args.urls);
   const outputPath = path.resolve(args.output || path.join(process.cwd(), 'a11y-scan-results.json'));
   let browserLib;
   try {
@@ -264,9 +407,34 @@ async function run() {
     console.error(err.message);
     process.exit(1);
   }
-  const runLighthouse = args.lighthouse === 'true';
   const summaryMode = args.summary === true || args.summary === 'true';
   const failOn = typeof args['fail-on'] === 'string' ? args['fail-on'] : null;
+  if (failOn && !['errors', 'new', 'none'].includes(failOn)) {
+    console.error(`Invalid --fail-on value: ${failOn}. Use errors, new, or none.`);
+    process.exit(1);
+  }
+
+  if (typeof args.discover === 'string') {
+    try {
+      urls.push(...loadUrlsFromDiscoverPlan(args.discover));
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
+  }
+  if (failOn === 'new' && typeof args.baseline !== 'string') {
+    console.error('--fail-on new requires --baseline <path>.');
+    process.exit(1);
+  }
+  let axeInstallVersion = PINNED_VERSIONS['axe-core'];
+  if (typeof args['axe-version'] === 'string') {
+    try {
+      axeInstallVersion = validateAxeVersion(args['axe-version']);
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
+  }
 
   if (args.sitemap && typeof args.sitemap === 'string') {
     try {
@@ -282,54 +450,76 @@ async function run() {
     }
   }
 
+  try {
+    urls = normalizeScanUrls(urls);
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+
   if (urls.length === 0) {
-    console.error('Usage: scan.js (--urls url1,url2 | --sitemap <url>) [--root <project-dir>] [--output <path>] [--summary] [--lighthouse true] [--sitemap-find <s> --sitemap-replace <s>] [--sitemap-exclude <regex>] [--fail-on errors]');
+    console.error('Usage: scan.js (--urls url1,url2 | --sitemap <url> | --discover <plan.json>) [--root <project-dir>] [--output <path>] [--summary] [--axe-version <x.y.z|latest>] [--sitemap-find <s> --sitemap-replace <s>] [--sitemap-exclude <regex>] [--baseline <path> --fail-on new] [--write-baseline <path>] [--fail-on errors|new|none]');
     process.exit(1);
   }
 
   // Resolve dependencies (skill-local → project → global → auto-install)
-  const axeDep = ensureDependency('axe-core', rootDir);
-  const browserDep = ensureDependency(browserLib, rootDir);
+  const axeDep = ensureDependency('axe-core', rootDir, axeInstallVersion);
+  const browserDep = ensureDependency(browserLib, rootDir, PINNED_VERSIONS[browserLib]);
 
-  console.error(`axe-core: ${axeDep.source}`);
-  console.error(`${browserLib}: ${browserDep.source}`);
+  const axeVersion = readPkgVersion(axeDep.root);
+  const browserVersion = readPkgVersion(browserDep.root);
+  console.error(`axe-core: ${axeDep.source}${axeVersion ? ` (v${axeVersion})` : ''}`);
+  console.error(`${browserLib}: ${browserDep.source}${browserVersion ? ` (v${browserVersion})` : ''}`);
 
   const axeSourcePath = path.join(axeDep.root, 'axe.min.js');
   const axeSource = fs.readFileSync(axeSourcePath, 'utf8');
 
   const browserModule = await loadPuppeteer(browserDep.root);
 
-  const browser = await browserModule.default.launch({
-    headless: true,
-    args: ['--no-sandbox'],
-  });
-
   const results = [];
-  for (const url of urls) {
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1280, height: 800 });
-    await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
-    await page.evaluate(axeSource);
-    const axe = await page.evaluate(async () => {
-      return axe.run(document, {
-        resultTypes: ['violations', 'passes', 'incomplete', 'inapplicable'],
-      });
+  const errors = [];
+  let browser;
+  try {
+    browser = await browserModule.default.launch({
+      headless: true,
+      args: ['--no-sandbox'],
     });
-    results.push({
-      url,
-      axe: summaryMode ? summarizeAxe(axe) : axe,
-      lighthouse: runLighthouse
-        ? { status: 'not-run-by-script', command: buildLighthouseCommand(url) }
-        : { status: 'skipped', reason: 'Lighthouse disabled for this run' },
-    });
-    await page.close();
+    for (const url of urls) {
+      let page;
+      try {
+        page = await browser.newPage();
+        await page.setViewport({ width: 1280, height: 800 });
+        await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
+        await page.evaluate(axeSource);
+        const axe = await page.evaluate(async () => {
+          return axe.run(document, {
+            resultTypes: ['violations', 'passes', 'incomplete', 'inapplicable'],
+          });
+        });
+        results.push({
+          url,
+          axe: summaryMode ? summarizeAxe(axe) : axe,
+          lighthouse: { status: 'skipped', reason: 'Lighthouse is a separate optional audit step' },
+        });
+      } catch (err) {
+        const failure = { url, error: err.message };
+        errors.push(failure);
+        console.error(`Scan failed for ${url}: ${err.message}`);
+      } finally {
+        if (page) await page.close().catch(() => {});
+      }
+    }
+  } finally {
+    if (browser) await browser.close().catch(() => {});
   }
 
-  await browser.close();
-  fs.writeFileSync(outputPath, JSON.stringify({
+  const findings = collectFindings(results);
+  const basePayload = {
     generated_at: new Date().toISOString(),
     root_dir: rootDir,
     browser: browserLib,
+    browser_version: browserVersion,
+    axe_version: axeVersion,
     axe_source: axeSourcePath,
     dependency_sources: {
       'axe-core': axeDep.source,
@@ -337,7 +527,55 @@ async function run() {
     },
     urls,
     results,
-  }, null, 2));
+    findings,
+    errors,
+  };
+
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  if (errors.length > 0) {
+    fs.writeFileSync(outputPath, JSON.stringify({ ...basePayload, baseline: null }, null, 2));
+    console.error(`a11y scan: ${errors.length} page(s) failed; partial results written to ${outputPath}`);
+    process.exit(1);
+  }
+  let baselineComparison = null;
+  if (typeof args.baseline === 'string') {
+    try {
+      const baselinePath = path.resolve(args.baseline);
+      const baseline = readBaseline(baselinePath);
+      const versionMismatch = Boolean(
+        baseline.axe_version && axeVersion && baseline.axe_version !== axeVersion
+      );
+      if (versionMismatch && args['allow-axe-version-mismatch'] !== true) {
+        throw new Error(
+          `Baseline axe-core version mismatch (${baseline.axe_version} -> ${axeVersion}). ` +
+          'Refresh the baseline deliberately or pass --allow-axe-version-mismatch.'
+        );
+      }
+      baselineComparison = {
+        path: baselinePath,
+        baseline_axe_version: baseline.axe_version || null,
+        current_axe_version: axeVersion || null,
+        axe_version_mismatch: versionMismatch,
+        ...compareBaseline(findings, baseline),
+      };
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
+  }
+
+  const payload = {
+    ...basePayload,
+    baseline: baselineComparison,
+  };
+  fs.writeFileSync(outputPath, JSON.stringify(payload, null, 2));
+
+  if (typeof args['write-baseline'] === 'string') {
+    const baselineOutput = path.resolve(args['write-baseline']);
+    fs.mkdirSync(path.dirname(baselineOutput), { recursive: true });
+    fs.writeFileSync(baselineOutput, JSON.stringify(buildBaseline(findings, axeVersion), null, 2));
+    console.error(`a11y baseline: wrote ${findings.length} accepted finding(s) to ${baselineOutput}`);
+  }
 
   console.log(outputPath);
 
@@ -348,6 +586,18 @@ async function run() {
       process.exit(2);
     }
     console.error(`a11y scan: 0 violations across ${urls.length} URL(s).`);
+  } else if (failOn === 'new') {
+    if (baselineComparison.new_count > 0) {
+      console.error(
+        `a11y scan: ${baselineComparison.new_count} new finding(s); ` +
+        `${baselineComparison.existing_count} accepted; ${baselineComparison.resolved_count} resolved — see ${outputPath}`
+      );
+      process.exit(2);
+    }
+    console.error(
+      `a11y scan: 0 new findings; ${baselineComparison.existing_count} accepted; ` +
+      `${baselineComparison.resolved_count} resolved.`
+    );
   }
 }
 
@@ -360,7 +610,17 @@ if (require.main === module) {
 
 module.exports = {
   splitCsv,
+  validateScanUrl,
+  normalizeScanUrls,
+  loadUrlsFromDiscoverPlan,
   validateBrowserLib,
+  validateAxeVersion,
   loadUrlsFromSitemap,
   countViolations,
+  normalizeRoute,
+  normalizeTarget,
+  findingFingerprint,
+  collectFindings,
+  compareBaseline,
+  buildBaseline,
 };

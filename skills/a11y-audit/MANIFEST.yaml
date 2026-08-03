@@ -1,10 +1,11 @@
 bundle: a11y-audit
-bundle_version: 19
-bundle_date: 2026-06-04
+bundle_version: 28
+bundle_date: 2026-07-21
 description: >
   Skill for running accessibility audits on web projects. Combines automated
-  scanning (axe-core via Puppeteer or Playwright, Lighthouse) with WCAG 2.1
-  AA compliance mapping, manual check guidance, and configurable output:
+  scanning (axe-core via Puppeteer) with configurable standards evidence,
+  template-aware discovery, manual check guidance, accepted accessibility
+  baselines, and configurable output:
   markdown report only, markdown plus JSON for CI, or markdown plus issue
   tracker tickets (GitHub, GitLab, Linear, Jira). Generic for any web
   project; project-specific standards and output preferences configured via
@@ -124,6 +125,47 @@ compatibility:
         Discovery is same-origin by default with explicit cross-origin
         sitemap opt-in, bounded fetches, and blocked-origin disclosure.
         Report and issue-plan Markdown now escape target-derived fields.
+    - platform: Anthropic Claude
+      model: Claude Fable 5
+      surface: Code
+      status: pass
+      date: 2026-07-11
+      skill_version: 15
+      notes: >
+        Durability review pass (v2.2.0): axe-core auto-install pinned to
+        a known-good version with --axe-version override, resolved
+        axe/browser versions recorded in scan output, report delta
+        section guards cross-version comparisons, and stale no-CI claims
+        corrected. Validated via npm run validate (15/15, including new
+        eval-11 mismatch assertions and validateAxeVersion hardening
+        regressions). Roadmap logged in HANDOFF.md.
+    - platform: OpenAI Codex
+      model: GPT-5
+      surface: Desktop
+      status: pass
+      date: 2026-07-11
+      skill_version: 22
+      notes: >
+        External landscape review repositioned the project as a narrow,
+        self-hosted regression gate for large web estates. The v2.3.1 patch
+        corrects public installation, migrates assistant-guide v0.3.3 to
+        GuideCheck 0.7.0, and adds eval-14 distribution drift coverage.
+        Validated via npm run validate (18/18 deterministic checks) plus the
+        GuideCheck Level 3 reference verifier.
+    - platform: Anthropic Claude
+      model: Claude Fable 5
+      surface: Code
+      status: pass
+      date: 2026-07-13
+      skill_version: 17
+      notes: >
+        Pluggable standards data (v2.4.0): criteria matrices extracted
+        to references/standards (wcag21-aa default, wcag22-aa with the
+        six new criteria and 4.1.1 removed, en301549 clause-9
+        rendering), selected via report.js --standard with strict id
+        validation. Assistant guide v0.3.4 re-pins report.js. Validated
+        via npm run validate (19/19) and the GuideCheck 0.7.0 reference
+        verifier (Level 3, no findings).
   spec_version: agentskills.io/1.0
   frontmatter_mode: minimal
 
@@ -132,11 +174,10 @@ dependencies:
     note: >
       Injected into Puppeteer/Playwright pages for WCAG violation
       detection via axe.run(). Install via: npm install axe-core
-  - name: npm:puppeteer OR npm:playwright
+  - name: npm:puppeteer
     note: >
-      Browser automation for loading pages and injecting axe-core.
-      Use whichever the project already has. Install via:
-      npm install puppeteer OR npm install playwright
+      Browser automation for loading pages and injecting axe-core in the
+      bundled scanner. Auto-install uses a pinned release.
   - name: lighthouse
     note: >
       CLI for accessibility scoring per page. Optional but recommended.
@@ -149,29 +190,31 @@ dependencies:
 files:
   - path: SKILL.md
     role: skill
-    version: 14
-    hash: sha256:021a3984890aeb2397e4d9429b489152ea71e9e1b74b9cdd682523742e56e58a
+    version: 20
+    hash: sha256:6b2201cfbfd3fba7a3082387b830a1239ba7bb37facd4fe25d350416cbfe6d76
     note: >
-      v14 -- documents same-origin discovery defaults, cross-origin
-      sitemap opt-in, and fixed Puppeteer-only scanner behavior
+      v20 documents sitemap-first discovery and explicit Action crawl fallback
 
   - path: evals/evals.json
     role: evals
-    version: 9
-    hash: sha256:ce5cb6df6c4468b109fd41ccd33ed5c24d75d7262de66d2b72450f962499462e
-    note: 12 eval cases -- eval-12 covers same-origin discovery defaults
+    version: 17
+    hash: sha256:b2e803ed7309bca27e9aad7eb9e65dd29bf2871e15ed435d6783464106fa2aca
+    note: >
+      18 eval cases including synchronized scanner dependency policy
 
   - path: HANDOFF.md
     role: handoff
-    version: 14
-    hash: sha256:2227befc48c47fe437cc886d5e2050984fba2215fc0bca21421db2bcc2c23fd2
-    note: v16 records executable offline eval validation and npm run validate
+    version: 23
+    hash: sha256:f6fa771b27962b4553d8a51cd55c3ae9ab650ae474d726a79e6b5ab4d15a8387
+    note: >
+      v23 records v2.5.2 dependency synchronization
 
   - path: CHANGELOG.md
     role: reference
-    version: 19
-    hash: sha256:158c647a71d9875d5a1512fed14f7feb0b1dff916479f068d491241cd0e2d000
-    note: Append-only change history -- v19 records v2.1.1 sitemap index recursion
+    version: 28
+    hash: sha256:030f5515b303bcf1a886052bfa386091a0b7eb72fbd179d49635f10abc463daf
+    note: >
+      Append-only history -- v28 records v2.5.2
 
   - path: evals/run-discover-fixture.js
     role: evals
@@ -181,9 +224,40 @@ files:
 
   - path: evals/run-evals.js
     role: evals
-    version: 2
-    hash: sha256:1958c614acffe82075663a1229edb4344a671d3c60e29700daccae4962b6a6d8
-    note: Deterministic offline eval runner with hardening regressions
+    version: 11
+    hash: sha256:7b00f31fe161a3abd2af755192789040e0a21f439caa3bb25516390f700093e0
+    note: >
+      v11 aligns scanner dependencies and version-update policy
+
+  - path: evals/run-browser-eval.js
+    role: evals
+    version: 1
+    hash: sha256:f47b024ea7725365a890027da77fac101712a734b9457d11bd5780beb4050bb7
+    note: Real Puppeteer and axe fixture scan with accepted-baseline rescan
+
+  - path: evals/fixtures/eval-11/README.md
+    role: evals
+    version: 1
+    hash: sha256:5163b1a59a5d0741bbe3665d5fb5fe08ed52b3fba5d8624901b5f7debbc9062e
+    note: Fixture documentation for page-aware delta reporting
+
+  - path: evals/fixtures/eval-11/current-scan.json
+    role: evals
+    version: 1
+    hash: sha256:fd5bed84d09aeaac41a94e2e5683044339db554b8d75da4be666409f3ec206c1
+    note: Current scan fixture for page-aware delta reporting
+
+  - path: evals/fixtures/eval-11/discover.json
+    role: evals
+    version: 1
+    hash: sha256:0da80d764c527342fe562dedad4fab0a523d7688cf549651c1e4aa65d7742b07
+    note: Discovery grouping fixture for page-aware delta reporting
+
+  - path: evals/fixtures/eval-11/previous-audit.json
+    role: evals
+    version: 1
+    hash: sha256:587ec63046ce891751e04789d0523a2194cc1d15f585c44cf5438925f0635c77
+    note: Prior audit fixture for page-aware delta reporting
 
   - path: evals/fixtures/eval-9/README.md
     role: evals
@@ -325,15 +399,16 @@ files:
 
   - path: references/project-context-template.md
     role: reference
-    version: 1
-    hash: sha256:4624a92a3d0081ff49e9892eacecb963798456352caa3053fa1f6d057f03d40b
-    note: Canonical schema and examples for workspace-local audit context
+    version: 3
+    hash: sha256:e111c28abc2f6b948837649ce5c7270d028ab260f92836fb223706676e5af8a4
+    note: >
+      v3 documents bundled standards ids mapped to report.js --standard
 
   - path: references/output-contract.md
     role: reference
-    version: 1
-    hash: sha256:2b550f14cf59a788c8355d027dcee4f1d668f76cfbac6b4ad817513eb5a27d05
-    note: Markdown and JSON output requirements plus degraded-mode rules
+    version: 3
+    hash: sha256:552e115fbcba4f7ae205449ed8d1c7c795da6c54ad73de3182409c3309cf204f
+    note: Output requirements with versioned JSON Schema identity
 
   - path: references/issue-trackers.md
     role: reference
@@ -343,21 +418,22 @@ files:
 
   - path: references/output-schema.json
     role: reference
-    version: 1
-    hash: sha256:facffb22ceb2221fda0ce354cac1dc83b67f0229ebe7616d2f1cb800be664710
-    note: Stable machine-readable schema for markdown+json output
+    version: 2
+    hash: sha256:b219b4374fa745dfc5e821010b147dd788864d90d8f778d22b8e7b6387c1fa09
+    note: Published Draft 2020-12 schema for audit JSON v1
 
   - path: scripts/scan.js
     role: script
-    version: 5
-    hash: sha256:f5e26661cf73fcbfaaf3ffa33fd438d4f233c4e80a2970ea34902b58cc440e5e
-    note: v5 recurses into <sitemapindex> documents for large multi-section sites
+    version: 9
+    hash: sha256:45f40403a1588aaa6a9dbb29176596b5553522aec8d86917bfa2456aafd056f7
+    note: >
+      v9 pins tested Node 18-compatible Puppeteer 24.43.1
 
   - path: scripts/bootstrap-context.js
     role: script
-    version: 1
-    hash: sha256:606c21c02a2c76e9be4e714563e58ee32bdb67f9bd22d82e7e6d8a3a7e2f2108
-    note: Helper for creating workspace-local PROJECT_CONTEXT.md
+    version: 2
+    hash: sha256:6cb6dd1413335c13ac9189605212cefbd072cf7498e54f12f461bbd636c66410
+    note: Context bootstrap helper with optional regression-gate fields
 
   - path: scripts/plan-issues.js
     role: script
@@ -367,33 +443,46 @@ files:
 
   - path: scripts/report.js
     role: script
-    version: 2
-    hash: sha256:b2546b02b4c0e1f3b23caf684ffd3ddc3057f3c0fa4842db76fc5463fddaa1cd
-    note: Deterministic report generation with Markdown escaping and origin disclosure
+    version: 6
+    hash: sha256:ea848df65a3bce9ed721937667626ddc33668e4d4a39080bec57ae7ebfe46f63
+    note: >
+      v6 emits schema_version 1 under the published audit JSON contract
 
   - path: scripts/discover.js
     role: script
-    version: 3
-    hash: sha256:3c15baed0cbd8a52553b99a24671f3dc9353764fe06be4e9786f6753a64cfbf8
-    note: Bounded same-origin discovery with explicit cross-origin sitemap opt-in
+    version: 4
+    hash: sha256:96a9e4f3002e399b45fea5fd5cf7fcd6cc1211f95901579ffd5e52c8b615168e
+    note: Bounded discovery retaining the entry page during crawl fallback
 
   - path: .gitignore
     role: config
-    version: 1
-    hash: pending
-    note: Excludes deps/ (auto-installed scan.js dependencies)
+    version: 2
+    hash: sha256:2fcab863708d17832bedae952da75621119bc2d8e295f3924b7bfb1862a22685
+    note: Retains scanner dependency manifests while excluding installed packages
+
+  - path: deps/package.json
+    role: config
+    version: 2
+    hash: sha256:ed71cb2f1b09f94a2ba7815f45eb7024a268d9731ec740d37f891f6bb63546bd
+    note: Exact validated axe-core and Puppeteer 24.43.1 scanner dependencies
+
+  - path: deps/package-lock.json
+    role: config
+    version: 2
+    hash: sha256:e6bfa901c7b889bd608487647a2f10e3aa61bc3c89156961623a2b2a88d3113a
+    note: Reproducible Node 18-compatible scanner dependency graph
 
   - path: assets/sample-output/audit-sample.md
     role: asset
-    version: 1
-    hash: sha256:6235e4ce670672f6f6e187dacea081632907419be6ba31c3b88cc84d5677196b
-    note: Sample markdown output artifact
+    version: 2
+    hash: sha256:e798b04be87285a2d9aa2f9e2e7cff748aebc3a5487043937e70c1a718ba0806
+    note: Sample markdown output with automated-evidence terminology
 
   - path: assets/sample-output/audit-sample.json
     role: asset
-    version: 1
-    hash: sha256:14883940462cd5e849f199235fff351d834ffeb3fe862d3f4574db6389ba823a
-    note: Sample JSON output artifact
+    version: 2
+    hash: sha256:0b55f603d86df74475a49d2606512dd41d4f8d68ab3ff0a6a5b88fbb5a93c0cf
+    note: Schema-valid sample audit JSON v1 artifact
 
   - path: assets/sample-output/issue-plan-sample.md
     role: asset
@@ -403,18 +492,42 @@ files:
 
   - path: assets/ci/github-actions/accessibility-audit.yml
     role: asset
-    version: 1
-    hash: sha256:1d9b1f85fc3d89ec3fc5eacf129ce086bcff676b17d35e07dd51c7d3a8e5b2de
-    note: GitHub Actions starter for scheduled or on-demand audits
+    version: 4
+    hash: sha256:085ac5414e4d7fb7136bad2125b3c16724dd3866a02b255e6f85aae2798cbf73
+    note: v2.5.2 template-aware remote Action starter with accepted-baseline gating
 
   - path: agents/openai.yaml
     role: agents
+    version: 2
+    hash: sha256:29bb6c70c2539c249e29fd9529e3c1904ba1190f911ca850ad83f010a10f1a0b
+    note: Codex UI metadata focused on template discovery and regression gating
+
+  - path: references/standards/wcag21-aa.json
+    role: reference
     version: 1
-    hash: sha256:cd232a03228c4e26f28ea5fde5dcdddc011f7a90c29fcc4b9f8e1bfd4771b041
-    note: Codex UI metadata for skill lists and prompt insertion
+    hash: sha256:510ef14cbbeeeb2fa37c32afda1d7d320ab45d9bd8bc9c8eed95c4428138b4f1
+    note: >
+      All 50 WCAG 2.1 Level A/AA criteria; the default standard, cited
+      by ADA Title II and EN 301 549 V3.2.1
+
+  - path: references/standards/wcag22-aa.json
+    role: reference
+    version: 1
+    hash: sha256:a70592ffc7303f4cad2c84307346edaeb0a7a2984f5defcece2d75b6057b8482
+    note: >
+      All 55 WCAG 2.2 Level A/AA criteria; 4.1.1 removed, six criteria
+      added relative to 2.1
+
+  - path: references/standards/en301549.json
+    role: reference
+    version: 1
+    hash: sha256:ab037da33d3c7801702cb63db1c6a231658476bc45bfcb1ff38357f4ff280e7f
+    note: >
+      EN 301 549 V3.2.1 clause 9 (Web) with clause numbers over the
+      one-to-one WCAG 2.1 A/AA mapping
 
   - path: MANIFEST.yaml
     role: reference
-    version: 16
+    version: 23
     hash: null
     note: This file -- self-referential hash omitted

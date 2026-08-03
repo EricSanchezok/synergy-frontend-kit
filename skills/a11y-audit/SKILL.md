@@ -1,24 +1,20 @@
 ---
 name: a11y-audit
 description: >
-  Run accessibility audits on web projects combining automated scanning
-  (axe-core, Lighthouse) with WCAG 2.1 AA compliance mapping, manual check
-  guidance, and structured reporting. Output is configurable: markdown
-  report only, markdown plus machine-readable JSON, or markdown plus issue
-  tracker integration. Use this skill whenever the user mentions
+  Run deterministic accessibility audits and regression gates on web
+  projects, especially large sites with many routes and shared templates.
+  Combines axe-core and optional Lighthouse with template-aware sampling,
+  stable finding fingerprints, accepted baselines, standards evidence
+  mapping (WCAG 2.1 AA default, WCAG 2.2 AA, EN 301 549), manual check
+  guidance, and structured reporting. Output is
+  configurable: markdown report only, markdown plus machine-readable JSON,
+  or markdown plus issue tracker integration. Use this skill whenever the user mentions
   "accessibility audit", "a11y audit", "WCAG audit", "accessibility check",
-  "compliance scan", or asks to check a web project for accessibility
-  issues. Also trigger when the user wants to verify WCAG conformance or
-  map findings to a specific standard (CAN-ASC-6.2, EN 301 549, ADA/AODA).
-metadata:
-  skill_bundle: a11y-audit
-  file_role: skill
-  version: 14
-  version_date: 2026-05-31
-  previous_version: 13
-  change_summary: >
-    Documented same-origin discovery defaults, cross-origin sitemap
-    opt-in, and fixed Puppeteer-only scanner dependency behavior.
+  "compliance scan", "accessibility baseline", "new accessibility
+  regressions", or asks to check a web project for accessibility issues.
+  Also trigger when the user wants evidence for WCAG conformance review or
+  mapping to a specific standard (WCAG 2.2, EN 301 549 / European
+  Accessibility Act, CAN-ASC-6.2, ADA/AODA).
 ---
 
 # Accessibility Audit
@@ -50,7 +46,7 @@ Prefer bundled helpers over ad hoc generation when they fit:
   Lighthouse execution intent. Use `--summary` to reduce output size
   (keeps full violation detail, strips node data from passes/inapplicable).
 - `scripts/report.js` generates the markdown report and JSON data file
-  from scan.js output. Handles WCAG compliance matrix, violation
+  from scan.js output. Handles the WCAG evidence matrix, violation
   aggregation, and color-contrast detail extraction deterministically.
 - `scripts/discover.js` identifies template groups on large sites and
   selects representative pages for scanning. Reads sitemap.xml first,
@@ -79,6 +75,18 @@ provide `axe-core` and the chosen browser automation package.
 The bundled scanner supports Puppeteer only. Treat `--browser` as a
 fixed option, not a user-controlled package installer.
 
+**Version pinning and delta integrity.** axe-core rule sets and browser
+behavior change between releases, so scan.js pins both axe-core and
+Puppeteer auto-installs to validated versions (`--axe-version
+<x.y.z|latest>` overrides axe-core deliberately). Every
+scan records the resolved `axe_version` and `browser_version` in its
+output JSON, report.js carries `axe_version` into the audit JSON, and
+the Delta from Previous Audit section flags comparisons where the two
+audits ran different axe-core versions — rule-set drift between versions
+must not be presented as site regressions or fixes. When a
+project-resolved axe-core wins the dependency lookup, its version is
+recorded the same way.
+
 ### Platform-Specific References
 
 - If running in Claude Code, read `references/claude-code.md` for
@@ -91,7 +99,11 @@ fixed option, not a user-controlled package installer.
 - Read `references/issue-trackers.md` only when `output_mode` is
   `markdown+issues`.
 - If the user wants to operationalize recurring audits in CI, start from
-  `assets/ci/github-actions/accessibility-audit.yml`.
+  `assets/ci/github-actions/accessibility-audit.yml`. The upstream Action
+  is exercised as a real consumer and checked with actionlint and zizmor.
+  Discovery is sitemap-first; set `discover-no-sitemap: true` in the Action
+  when a served build must be crawled from `discover-url` instead, then
+  adapt the inputs without copying its implementation into the target repo.
 - Prefer `scripts/plan-issues.js` before live ticket creation when you
   need a safe review and deduplication pass.
 
@@ -120,12 +132,36 @@ simple generated file is sufficient.
 
 The `markdown+json` mode writes a companion file alongside the report:
 `audit-YYYY-MM-DD.json` containing the raw axe-core results, Lighthouse
-scores, and the compliance matrix as structured data. This file is
+scores, and the evidence matrix as structured data. This file is
 machine-readable and can be consumed by CI pipelines, dashboards, or
 trend-tracking tools.
 
 The `markdown+issues` mode requires additional configuration in the
 context file (see Phase 6).
+
+### Regression Gate
+
+For an established site with existing accessibility debt, prefer an
+accepted baseline over an all-or-nothing gate:
+
+```bash
+# Create a baseline only after reviewing the current findings.
+node a11y-audit/scripts/scan.js \
+  --urls http://127.0.0.1:3000/ \
+  --write-baseline .a11y-audit/baseline.json
+
+# Fail only when the current scan introduces a finding outside it.
+node a11y-audit/scripts/scan.js \
+  --urls http://127.0.0.1:3000/ \
+  --baseline .a11y-audit/baseline.json \
+  --fail-on new
+```
+
+The scanner fingerprints each finding from its axe rule, normalized
+route, and normalized axe target. Baselines record the axe-core version;
+version mismatches stop comparison unless deliberately overridden. Never
+refresh a baseline automatically in CI. Review and commit baseline
+changes as an explicit acceptance decision.
 
 ---
 
@@ -196,7 +232,7 @@ Example invocation:
 ```bash
 node a11y-audit/scripts/scan.js \
   --root . \
-  --urls http://127.0.0.1:3000/,http://127.0.0.1:3000/about \
+  --discover /tmp/a11y-discover.json \
   --output /tmp/a11y-scan.json \
   --summary
 ```
@@ -245,7 +281,7 @@ occurred. axe-core results alone are sufficient for a valid audit.
 #### Scope Control
 
 - Default: scan routes discovered in Phase 1
-- If a discover.js scan plan exists, use its `scanList` for `--urls`.
+- If a discover.js scan plan exists, pass the plan with `--discover`.
   The report methodology will record the sampling strategy.
 - If more than 10 routes exist and no discover plan is available, ask
   the user which to scan or whether to scan all
@@ -265,18 +301,32 @@ For each page, collect:
 - `lighthouseScore`: 0-100 (if available)
 - `lighthouseAudits`: failed audit details (if available)
 
-### Phase 3 -- Compliance Mapping
+### Phase 3 -- Standards Evidence Mapping
 
-**Purpose:** Map automated findings to WCAG 2.1 AA success criteria and
-any project-specific standards.
+**Purpose:** Map automated findings to the configured standard's
+success criteria and any project-specific standards.
 
-`scripts/report.js` handles the compliance matrix deterministically. It
-hardcodes all 50 WCAG 2.1 Level A and AA criteria, maps axe tags to
-success criteria, and produces the matrix as part of its markdown and
-JSON output. You do not need to build the matrix manually.
+`scripts/report.js` handles the evidence matrix deterministically.
+Criteria matrices are data files in `references/standards/`, selected
+with `--standard <id>`:
+
+- `wcag21-aa` (default): all 50 WCAG 2.1 Level A and AA criteria.
+  Cited by the ADA Title II final rule and EN 301 549 V3.2.1.
+- `wcag22-aa`: all 55 WCAG 2.2 Level A and AA criteria (4.1.1 Parsing
+  removed; 2.4.11, 2.5.7, 2.5.8, 3.2.6, 3.3.7, 3.3.8 added).
+- `en301549`: EN 301 549 V3.2.1 clause 9 (Web), the harmonised standard
+  under the European Accessibility Act; renders clause numbers alongside
+  the one-to-one WCAG 2.1 criteria mapping.
+
+Map the `standards` value in `.a11y-audit/PROJECT_CONTEXT.md` to the
+matching id (e.g., `WCAG 2.2 AA` → `wcag22-aa`; `EN 301 549` as primary
+→ `en301549`) and pass it via `--standard`. The script maps axe tags to
+success criteria and produces the matrix in its markdown and JSON
+output; the JSON records which standard was used. You do not need to
+build the matrix manually.
 
 If `.a11y-audit/PROJECT_CONTEXT.md` specifies additional standards
-(e.g., CAN-ASC-6.2), build a secondary mapping. Cross-reference
+beyond these (e.g., CAN-ASC-6.2), build a secondary mapping. Cross-reference
 automated findings where the standard maps to WCAG criteria. For
 requirements that go beyond WCAG (equity, organizational processes,
 transparency), note them as manual review items referencing the
@@ -352,6 +402,8 @@ specific findings pattern).
 If the user wants a recurring or on-demand CI job, adapt
 `assets/ci/github-actions/accessibility-audit.yml` to the target
 workspace instead of inventing a workflow from scratch.
+Keep baseline updates outside CI and preserve the Action's discovery and scan
+artifacts so a failed gate remains reviewable.
 
 ### Phase 6 -- Issue Creation (conditional)
 
@@ -380,8 +432,9 @@ After completing an audit, verify these quality checks:
    DevTools Lighthouse run when Lighthouse was actually executed. Should
    be within 5 points.
 
-3. **WCAG matrix complete**: All 50 AA criteria appear in the compliance
-   matrix. No criterion is missing.
+3. **Standards matrix complete**: The configured evidence matrix contains
+   the expected criteria count: 50 for `wcag21-aa`, 55 for `wcag22-aa`,
+   or 50 clause-mapped criteria for `en301549`. No criterion is missing.
 
    Treat the matrix as evidence-oriented status reporting. Do not frame
    it as proof of full conformance, because many WCAG criteria remain
@@ -418,8 +471,15 @@ After completing an audit, verify these quality checks:
 - **Code fixes**: reports findings but does not modify source code.
 - **VPAT generation**: does not produce Voluntary Product Accessibility
   Templates (specific legal format).
-- **Continuous monitoring**: runs on demand, not as a CI pipeline.
-  The `markdown+json` output mode provides structured data for building
-  CI integrations, but the skill itself does not run in CI.
+- **Hosted continuous monitoring**: no scheduled scanning service or
+  dashboard. CI gating *is* supported: the repo ships a composite
+  GitHub Action (`.github/actions/scan`) that runs the scanner on
+  push/PR and can fail on all violations or only findings outside an
+  accepted baseline, plus a workflow starter at
+  `assets/ci/github-actions/accessibility-audit.yml`. The
+  upstream repository exercises the composite Action end to end and runs
+  workflow semantic and security checks. The
+  `markdown+json` output mode provides structured data for building
+  further integrations.
 - **Third-party auditing**: only audits the project's own frontend,
   not embedded third-party services.

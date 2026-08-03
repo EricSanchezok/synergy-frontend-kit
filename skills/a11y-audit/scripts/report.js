@@ -2,10 +2,12 @@
 /*
 skill_bundle: a11y-audit
 file_role: script
-version: 2
-version_date: 2026-05-31
-previous_version: 1
-change_summary: Escapes target-derived Markdown fields and discloses discovery origin policy.
+version: 6
+version_date: 2026-07-21
+previous_version: 5
+change_summary: >
+  Aligns generated JSON provenance with report.js v6 and adds an explicit
+  schema version while preserving the pluggable standards contract.
 */
 
 const fs = require('fs');
@@ -30,65 +32,47 @@ function parseArgs(argv) {
 }
 
 // ---------------------------------------------------------------------------
-// WCAG 2.1 AA Criteria (all 50 Level A + AA)
+// Standards data (criteria matrices live in references/standards/*.json)
 // ---------------------------------------------------------------------------
 
-const WCAG_CRITERIA = [
-  // Principle 1: Perceivable
-  { sc: '1.1.1', name: 'Non-text Content', level: 'A', principle: 'Perceivable' },
-  { sc: '1.2.1', name: 'Audio-only and Video-only (Prerecorded)', level: 'A', principle: 'Perceivable' },
-  { sc: '1.2.2', name: 'Captions (Prerecorded)', level: 'A', principle: 'Perceivable' },
-  { sc: '1.2.3', name: 'Audio Description or Media Alternative (Prerecorded)', level: 'A', principle: 'Perceivable' },
-  { sc: '1.2.4', name: 'Captions (Live)', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.2.5', name: 'Audio Description (Prerecorded)', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.3.1', name: 'Info and Relationships', level: 'A', principle: 'Perceivable' },
-  { sc: '1.3.2', name: 'Meaningful Sequence', level: 'A', principle: 'Perceivable' },
-  { sc: '1.3.3', name: 'Sensory Characteristics', level: 'A', principle: 'Perceivable' },
-  { sc: '1.3.4', name: 'Orientation', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.3.5', name: 'Identify Input Purpose', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.4.1', name: 'Use of Color', level: 'A', principle: 'Perceivable' },
-  { sc: '1.4.2', name: 'Audio Control', level: 'A', principle: 'Perceivable' },
-  { sc: '1.4.3', name: 'Contrast (Minimum)', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.4.4', name: 'Resize Text', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.4.5', name: 'Images of Text', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.4.10', name: 'Reflow', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.4.11', name: 'Non-text Contrast', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.4.12', name: 'Text Spacing', level: 'AA', principle: 'Perceivable' },
-  { sc: '1.4.13', name: 'Content on Hover or Focus', level: 'AA', principle: 'Perceivable' },
-  // Principle 2: Operable
-  { sc: '2.1.1', name: 'Keyboard', level: 'A', principle: 'Operable' },
-  { sc: '2.1.2', name: 'No Keyboard Trap', level: 'A', principle: 'Operable' },
-  { sc: '2.1.4', name: 'Character Key Shortcuts', level: 'A', principle: 'Operable' },
-  { sc: '2.2.1', name: 'Timing Adjustable', level: 'A', principle: 'Operable' },
-  { sc: '2.2.2', name: 'Pause, Stop, Hide', level: 'A', principle: 'Operable' },
-  { sc: '2.3.1', name: 'Three Flashes or Below Threshold', level: 'A', principle: 'Operable' },
-  { sc: '2.4.1', name: 'Bypass Blocks', level: 'A', principle: 'Operable' },
-  { sc: '2.4.2', name: 'Page Titled', level: 'A', principle: 'Operable' },
-  { sc: '2.4.3', name: 'Focus Order', level: 'A', principle: 'Operable' },
-  { sc: '2.4.4', name: 'Link Purpose (In Context)', level: 'A', principle: 'Operable' },
-  { sc: '2.4.5', name: 'Multiple Ways', level: 'AA', principle: 'Operable' },
-  { sc: '2.4.6', name: 'Headings and Labels', level: 'AA', principle: 'Operable' },
-  { sc: '2.4.7', name: 'Focus Visible', level: 'AA', principle: 'Operable' },
-  { sc: '2.5.1', name: 'Pointer Gestures', level: 'A', principle: 'Operable' },
-  { sc: '2.5.2', name: 'Pointer Cancellation', level: 'A', principle: 'Operable' },
-  { sc: '2.5.3', name: 'Label in Name', level: 'A', principle: 'Operable' },
-  { sc: '2.5.4', name: 'Motion Actuation', level: 'A', principle: 'Operable' },
-  // Principle 3: Understandable
-  { sc: '3.1.1', name: 'Language of Page', level: 'A', principle: 'Understandable' },
-  { sc: '3.1.2', name: 'Language of Parts', level: 'AA', principle: 'Understandable' },
-  { sc: '3.2.1', name: 'On Focus', level: 'A', principle: 'Understandable' },
-  { sc: '3.2.2', name: 'On Input', level: 'A', principle: 'Understandable' },
-  { sc: '3.2.3', name: 'Consistent Navigation', level: 'AA', principle: 'Understandable' },
-  { sc: '3.2.4', name: 'Consistent Identification', level: 'AA', principle: 'Understandable' },
-  { sc: '3.3.1', name: 'Error Identification', level: 'A', principle: 'Understandable' },
-  { sc: '3.3.2', name: 'Labels or Instructions', level: 'A', principle: 'Understandable' },
-  { sc: '3.3.3', name: 'Error Suggestion', level: 'AA', principle: 'Understandable' },
-  { sc: '3.3.4', name: 'Error Prevention (Legal, Financial, Data)', level: 'AA', principle: 'Understandable' },
-  // Principle 4: Robust
-  { sc: '4.1.1', name: 'Parsing', level: 'A', principle: 'Robust' },
-  { sc: '4.1.2', name: 'Name, Role, Value', level: 'A', principle: 'Robust' },
-  { sc: '4.1.3', name: 'Status Messages', level: 'AA', principle: 'Robust' },
-];
+// Criteria matrices are data, not code, so a standards revision is a JSON
+// file rather than a script rewrite. wcag21-aa stays the default: the ADA
+// Title II final rule and EN 301 549 V3.2.1 both cite WCAG 2.1 AA.
+const STANDARDS_DIR = path.join(__dirname, '..', 'references', 'standards');
+const DEFAULT_STANDARD = 'wcag21-aa';
+const REPORT_VERSION = 6;
+const OUTPUT_SCHEMA_VERSION = 1;
+
+function listStandards() {
+  try {
+    return fs.readdirSync(STANDARDS_DIR)
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.replace(/\.json$/, ''))
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+function loadStandard(id) {
+  if (!/^[a-z0-9][a-z0-9.-]*$/.test(id)) {
+    throw new Error(`Invalid standard id: ${id}. Available: ${listStandards().join(', ')}`);
+  }
+  const file = path.join(STANDARDS_DIR, `${id}.json`);
+  if (!fs.existsSync(file)) {
+    throw new Error(`Unknown standard: ${id}. Available: ${listStandards().join(', ')}`);
+  }
+  const std = JSON.parse(fs.readFileSync(file, 'utf8'));
+  if (!std.id || !std.name || !Array.isArray(std.criteria) || std.criteria.length === 0) {
+    throw new Error(`Malformed standard file: ${file} (requires id, name, non-empty criteria)`);
+  }
+  for (const c of std.criteria) {
+    if (typeof c.sc !== 'string' || typeof c.name !== 'string' || typeof c.level !== 'string') {
+      throw new Error(`Malformed criterion in ${file}: ${JSON.stringify(c)}`);
+    }
+  }
+  return std;
+}
 
 // axe tag → WCAG SC mapping. Tags like "wcag111" map to "1.1.1".
 function axeTagToSC(tag) {
@@ -200,12 +184,12 @@ function detectSharedTemplates(scanData, discoverData) {
 }
 
 // ---------------------------------------------------------------------------
-// WCAG compliance matrix
+// WCAG automation evidence matrix
 // ---------------------------------------------------------------------------
 
-function buildMatrix(passTags, failTags, inapplicableTags) {
+function buildMatrix(criteria, passTags, failTags, inapplicableTags) {
   const matrix = {};
-  for (const criterion of WCAG_CRITERIA) {
+  for (const criterion of criteria) {
     const scTag = `wcag${criterion.sc.replace(/\./g, '')}`;
     if (failTags.has(scTag)) {
       matrix[criterion.sc] = 'fail';
@@ -299,7 +283,7 @@ function buildSummary(violationMap) {
 // ---------------------------------------------------------------------------
 
 function buildJson(opts) {
-  const { date, projectName, pageUrls, violationMap, matrix, lighthouse, runtimeUrl, expectedUrl } = opts;
+  const { date, pageUrls, violationMap, matrix, lighthouse, runtimeUrl, expectedUrl, axeVersion, standard } = opts;
   const violations = [];
   for (const v of violationMap.values()) {
     const wcag = v.tags.map(axeTagToSC).filter(Boolean);
@@ -312,8 +296,10 @@ function buildJson(opts) {
     });
   }
   const json = {
+    schema_version: OUTPUT_SCHEMA_VERSION,
     date,
-    tool: `a11y-audit report.js v1`,
+    tool: `a11y-audit report.js v${REPORT_VERSION}`,
+    standard: standard ? { id: standard.id, name: standard.name } : undefined,
     pages: pageUrls,
     lighthouse: lighthouse || { status: 'skipped', reason: 'Not run by report.js' },
     summary: buildSummary(violationMap),
@@ -322,6 +308,7 @@ function buildJson(opts) {
   };
   if (expectedUrl) json.expected_url = expectedUrl;
   if (runtimeUrl) json.runtime_url = runtimeUrl;
+  if (axeVersion) json.axe_version = axeVersion;
   return json;
 }
 
@@ -329,8 +316,16 @@ function buildJson(opts) {
 // Delta comparison
 // ---------------------------------------------------------------------------
 
-function computeDelta(currentViolationMap, previousJson) {
+function computeDelta(currentViolationMap, previousJson, currentAxeVersion) {
   if (!previousJson || !previousJson.violations) return null;
+
+  // axe-core rule sets change between releases: a rule appearing or
+  // disappearing across versions is not evidence the site changed. Surface
+  // the version pair so the report can qualify cross-version comparisons.
+  const previousAxeVersion = typeof previousJson.axe_version === 'string' ? previousJson.axe_version : null;
+  const axeVersionMismatch = previousAxeVersion && currentAxeVersion
+    ? previousAxeVersion !== currentAxeVersion
+    : null; // unknown — at least one audit did not record its axe version
 
   const prevMap = new Map();
   for (const v of previousJson.violations) {
@@ -392,6 +387,9 @@ function computeDelta(currentViolationMap, previousJson) {
   return {
     previousDate: previousJson.date,
     previousPages: previousJson.pages ? previousJson.pages.length : null,
+    previousAxeVersion,
+    currentAxeVersion: currentAxeVersion || null,
+    axeVersionMismatch,
     fixed,
     newRules,
     changed,
@@ -432,7 +430,7 @@ const REMEDIATION_HINTS = {
 // ---------------------------------------------------------------------------
 
 function buildMarkdown(opts) {
-  const { date, projectName, pageUrls, violationMap, matrix, summary, contrastDetails, lighthouse, runtimeUrl, expectedUrl, discoverData, sharedTemplates, delta } = opts;
+  const { date, projectName, pageUrls, violationMap, matrix, summary, contrastDetails, lighthouse, runtimeUrl, expectedUrl, discoverData, sharedTemplates, delta, standard } = opts;
   const lines = [];
   const ln = (s = '') => lines.push(s);
 
@@ -445,7 +443,7 @@ function buildMarkdown(opts) {
   ln('|---|---|');
   ln(`| Project | ${normalizeCell(projectName)} |`);
   ln(`| Date | ${date} |`);
-  ln(`| Standards | WCAG 2.1 AA |`);
+  ln(`| Standards | ${normalizeCell(standard.name)} |`);
   ln(`| Tool Version | axe-core (via scan.js); report.js v1 |`);
   if (runtimeUrl && expectedUrl && runtimeUrl !== expectedUrl) {
     ln(`| Runtime URL | ${normalizeCell(runtimeUrl)} (expected ${normalizeCell(expectedUrl)}) |`);
@@ -528,22 +526,29 @@ function buildMarkdown(opts) {
     ln();
   }
 
-  // 4. WCAG 2.1 AA Compliance Matrix
-  ln('## WCAG 2.1 AA Compliance Matrix');
+  // 4. Automated Evidence Matrix (criteria from the configured standard)
+  const hasClauses = standard.criteria.some((c) => c.clause);
+  ln(`## ${normalizeCell(standard.matrixTitle || `${standard.name} Automated Evidence Matrix`)}`);
   ln();
-  ln('> This is an automation-assisted status view, not a conformance certification.');
+  ln('> This records automated evidence only. A pass means the configured automated checks found no failure; it does not establish conformance.');
   ln();
   let currentPrinciple = '';
-  ln('| SC | Name | Level | Status |');
-  ln('|---|---|---|---|');
-  for (const c of WCAG_CRITERIA) {
+  if (hasClauses) {
+    ln('| Clause | SC | Name | Level | Automated status |');
+    ln('|---|---|---|---|---|');
+  } else {
+    ln('| SC | Name | Level | Automated status |');
+    ln('|---|---|---|---|');
+  }
+  for (const c of standard.criteria) {
     if (c.principle !== currentPrinciple) {
       currentPrinciple = c.principle;
-      ln(`| **${c.principle}** | | | |`);
+      ln(hasClauses ? `| **${c.principle}** | | | | |` : `| **${c.principle}** | | | |`);
     }
     const status = matrix[c.sc] || 'manual';
     const icon = status === 'pass' ? 'Pass' : status === 'fail' ? '**Fail**' : status === 'not-applicable' ? 'N/A' : 'Manual';
-    ln(`| SC ${c.sc} | ${c.name} | ${c.level} | ${icon} |`);
+    const row = `| SC ${c.sc} | ${c.name} | ${c.level} | ${icon} |`;
+    ln(hasClauses ? `| ${normalizeCell(c.clause || '-')} ${row}` : row);
   }
   ln();
 
@@ -553,6 +558,13 @@ function buildMarkdown(opts) {
     ln();
     ln(`Compared against audit from ${normalizeCell(delta.previousDate)}${delta.previousPages ? ` (${delta.previousPages} pages)` : ''}.`);
     ln();
+    if (delta.axeVersionMismatch === true) {
+      ln(`> **Caution:** axe-core version changed between audits (${normalizeCell(delta.previousAxeVersion)} → ${normalizeCell(delta.currentAxeVersion)}). Rule-set differences between axe-core releases can appear as new or fixed rules. Treat cross-version deltas as advisory, not as evidence of site regressions or fixes.`);
+      ln();
+    } else if (!delta.previousAxeVersion && delta.currentAxeVersion) {
+      ln(`> **Note:** The previous audit did not record its axe-core version (current run: ${normalizeCell(delta.currentAxeVersion)}). This comparison assumes an unchanged rule set.`);
+      ln();
+    }
     ln(`| Metric | Previous | Current | Change |`);
     ln('|---|---|---|---|');
     const sign = (n) => n > 0 ? `+${n}` : `${n}`;
@@ -697,7 +709,16 @@ function main() {
   const args = parseArgs(process.argv.slice(2));
   const inputPath = args.input;
   if (!inputPath) {
-    console.error('Usage: report.js --input <scan.json> --output-dir <dir> [--project-name <name>] [--expected-url <url>] [--runtime-url <url>] [--discover <discover.json>] [--previous <prior-audit.json>]');
+    console.error('Usage: report.js --input <scan.json> --output-dir <dir> [--standard <id>] [--project-name <name>] [--expected-url <url>] [--runtime-url <url>] [--discover <discover.json>] [--previous <prior-audit.json>]');
+    console.error(`Available standards: ${listStandards().join(', ')} (default: ${DEFAULT_STANDARD})`);
+    process.exit(1);
+  }
+
+  let standard;
+  try {
+    standard = loadStandard(typeof args.standard === 'string' ? args.standard : DEFAULT_STANDARD);
+  } catch (err) {
+    console.error(err.message);
     process.exit(1);
   }
 
@@ -710,11 +731,12 @@ function main() {
   const discoverData = discoverPath ? JSON.parse(fs.readFileSync(path.resolve(discoverPath), 'utf8')) : null;
   const previousPath = args.previous || null;
   const previousJson = previousPath ? JSON.parse(fs.readFileSync(path.resolve(previousPath), 'utf8')) : null;
+  const axeVersion = typeof scanData.axe_version === 'string' ? scanData.axe_version : null;
   const date = new Date().toISOString().slice(0, 10);
 
   // Aggregate
   const { violationMap, passTags, failTags, inapplicableTags, pageUrls } = aggregateScan(scanData);
-  const matrix = buildMatrix(passTags, failTags, inapplicableTags);
+  const matrix = buildMatrix(standard.criteria, passTags, failTags, inapplicableTags);
   const summary = buildSummary(violationMap);
   const contrastDetails = extractContrastDetails(violationMap);
   const lighthouse = scanData.results[0]?.lighthouse || { status: 'skipped', reason: 'Not available' };
@@ -723,12 +745,12 @@ function main() {
   const sharedTemplates = discoverData ? detectSharedTemplates(scanData, discoverData) : [];
 
   // Delta comparison
-  const delta = previousJson ? computeDelta(violationMap, previousJson) : null;
+  const delta = previousJson ? computeDelta(violationMap, previousJson, axeVersion) : null;
 
   // Generate outputs
-  const mdOpts = { date, projectName, pageUrls, violationMap, matrix, summary, contrastDetails, lighthouse, runtimeUrl, expectedUrl, discoverData, sharedTemplates, delta };
+  const mdOpts = { date, projectName, pageUrls, violationMap, matrix, summary, contrastDetails, lighthouse, runtimeUrl, expectedUrl, discoverData, sharedTemplates, delta, standard };
   const markdown = buildMarkdown(mdOpts);
-  const json = buildJson({ date, projectName, pageUrls, violationMap, matrix, lighthouse, runtimeUrl, expectedUrl });
+  const json = buildJson({ date, pageUrls, violationMap, matrix, lighthouse, runtimeUrl, expectedUrl, axeVersion, standard });
   if (discoverData) {
     json.sampling = {
       source: discoverData.source,
@@ -755,6 +777,9 @@ function main() {
   if (delta) {
     json.delta = {
       previousDate: delta.previousDate,
+      previousAxeVersion: delta.previousAxeVersion,
+      currentAxeVersion: delta.currentAxeVersion,
+      axeVersionMismatch: delta.axeVersionMismatch,
       previousTotal: delta.previousTotal,
       currentTotal: delta.currentTotal,
       netDelta: delta.netDelta,
