@@ -21,18 +21,6 @@ export const SKILL_ENTRIES: PluginSkill[] = [
     dir: "skills/taste-frontend",
   },
   {
-    name: "color-expert",
-    description:
-      "Use when working with color naming, color theory, color spaces, color definitions, or any task involving color knowledge - palettes, ramps, gradients, conversions, accessibility, perceptual matching, pigment mixing, print-vs-screen color, CSS color syntax, or historical color terminology. Use this skill whenever the user is choosing, comparing, generating, naming, converting, or explaining colors, even if they do not explicitly ask for color theory.",
-    dir: "skills/color-expert",
-  },
-  {
-    name: "typography",
-    description:
-      "Apply professional typography principles to create readable, hierarchical, and aesthetically refined interfaces. Use when setting type scales, choosing fonts, adjusting spacing, designing text-heavy layouts, implementing dark mode typography, or when asked about readability, font pairing, line height, measure, typographic hierarchy, variable fonts, font loading, or OpenType features.",
-    dir: "skills/typography",
-  },
-  {
     name: "motion-design",
     description:
       "Applies motion design principles to create emotionally-driven, technically sound animations and transitions. Provides timing, easing, choreography, and Disney animation principles adapted for UI. Use when creating animations, transitions, micro-interactions, loading states, page transitions, scroll-triggered effects, or any motion work. Works with CSS, Framer Motion, GSAP, Lottie, Spring, or any animation system.",
@@ -47,7 +35,7 @@ export const SKILL_ENTRIES: PluginSkill[] = [
   {
     name: "a11y-audit",
     description:
-      "Run accessibility audits on web projects combining automated scanning (axe-core, Lighthouse) with WCAG 2.1 AA compliance mapping, manual check guidance, and structured reporting. Output is configurable: markdown report only, markdown plus machine-readable JSON, or markdown plus issue tracker integration. Use this skill whenever the user mentions accessibility audit, a11y audit, WCAG audit, accessibility check, compliance scan, or asks to check a web project for accessibility issues. Also trigger when the user wants to verify WCAG conformance or map findings to a specific standard (CAN-ASC-6.2, EN 301 549, ADA/AODA).",
+      "Run deterministic accessibility audits and regression gates on web projects, especially large sites with many routes and shared templates. Combines axe-core and optional Lighthouse with template-aware sampling, stable finding fingerprints, accepted baselines, standards evidence mapping (WCAG 2.1 AA default, WCAG 2.2 AA, EN 301 549), manual check guidance, and structured reporting. Output is configurable: markdown report only, markdown plus machine-readable JSON, or markdown plus issue tracker integration. Use this skill whenever the user mentions \"accessibility audit\", \"a11y audit\", \"WCAG audit\", \"accessibility check\", \"compliance scan\", \"accessibility baseline\", \"new accessibility regressions\", or asks to check a web project for accessibility issues. Also trigger when the user wants evidence for WCAG conformance review or mapping to a specific standard (WCAG 2.2, EN 301 549 / European Accessibility Act, CAN-ASC-6.2, ADA/AODA).",
     dir: "skills/a11y-audit",
   },
   {
@@ -62,5 +50,47 @@ export const SKILL_ENTRIES: PluginSkill[] = [
       "Clean editorial-style interfaces. Warm monochrome palette, typographic contrast, flat bento grids, muted pastels. No gradients, no heavy shadows.",
     dir: "skills/minimalist-design",
   },
-];
+  {
+    name: "better-interface",
+    description:
+      ">-",
+    dir: "skills/better-interface",
+  },
+  {
+    name: "better-ui",
+    description:
+      "Design engineering principles for making interfaces feel polished. Use when building UI components, reviewing frontend code, implementing animations, hover states, shadows, borders, micro-interactions, enter/exit animations, choosing or reviewing icons, or any visual detail work. Triggers on UI polish, design details, \"make it feel better\", \"feels off\", stagger animations, border radius, optical alignment, image outlines, box shadows, icons, icon stroke weight, icon states, motion restraint.",
+    dir: "skills/better-ui",
+  },
+  {
+    name: "better-typography",
+    description:
+      "Web typography from choosing fonts to spacing, wrapping and accessibility. Use when picking or pairing typefaces, configuring variable fonts or OpenType features, setting up a type scale, checking heading hierarchy, styling text in components, truncating text, styling underlines, selection, placeholders or carets, or reviewing frontend code for typography. Triggers on typography, fonts, font formats, woff2, variable fonts, font-weight, opentype, font-feature-settings, letter-spacing, line-height, type scale, heading hierarchy, heading levels, tabular numbers, text-wrap, truncation, line clamp, underlines, text-decoration, text selection, iOS input zoom, font smoothing, text contrast, measure, line length, text-box, smart punctuation, drop cap.",
+    dir: "skills/better-typography",
+  },
+  {
+    name: "better-colors",
+    description:
+      "OKLCH color space and color usage for web projects. Convert hex/rgb/hsl to oklch, generate palettes, check contrast, handle gamut boundaries, theme with Tailwind v4, and apply color with meaning. Triggers on oklch, color conversion, palette generation, contrast ratio, gamut, display p3, design tokens, semantic color tokens, hue drift, chroma, dark mode colors, accent color, color meaning, light and dark appearance, increased contrast.",
+    dir: "skills/better-colors",
+  },
+  {
+    name: "better-accessibility",
+    description:
+      "Accessibility engineering for product interfaces, from focus states and keyboard support to ARIA, forms, and screen readers. Use when building or reviewing UI components, modals, menus, forms, custom widgets, or when the user says \"make this accessible\" or reports keyboard or screen-reader issues. Triggers on accessibility, a11y, WCAG, aria, focus ring, focus-visible, focus trap, keyboard navigation, tab order, tabindex, screen reader, sr-only, aria-live, alt text, hit area, touch target, prefers-reduced-motion, autoplay, toast duration, skip link, semantic HTML, aria-label, form errors, disabled buttons, \"not keyboard accessible\".",
+    dir: "skills/better-accessibility",
+  },
+  {
+    name: "better-layout",
+    description:
+      "Layout structure for web interfaces, from grouping and alignment to reading order, progressive disclosure, and adaptive breakpoints. Use when structuring a page or component, spacing or aligning controls, deciding what collapses at small sizes, handling RTL layout direction, or reviewing frontend code for layout. Triggers on layout, spacing, alignment, grouping, negative space, whitespace, visual hierarchy, reading order, progressive disclosure, breakpoints, responsive layout, container queries, safe area, full-bleed, edge-to-edge, layout margins, RTL layout, logical properties.",
+    dir: "skills/better-layout",
+  },
+  {
+    name: "better-writing",
+    description:
+      ">-",
+    dir: "skills/better-writing",
+  },
+]
 // === END SKILLS ===

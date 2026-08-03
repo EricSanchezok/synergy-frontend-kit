@@ -35,31 +35,6 @@
       "allowLocalPatch": false
     },
     {
-      "name": "color-expert",
-      "source": {
-        "type": "git",
-        "repo": "https://github.com/meodai/skill.color-expert.git",
-        "ref": "main",
-        "path": ".",
-        "include": ["SKILL.md", "references", "LICENSE", "THIRD_PARTY_NOTICES.md", "README.md", "SECURITY.md"]
-      },
-      "license": "Apache-2.0",
-      "licenseFiles": ["LICENSE", "THIRD_PARTY_NOTICES.md"],
-      "allowLocalPatch": false
-    },
-    {
-      "name": "typography",
-      "source": {
-        "type": "git",
-        "repo": "https://github.com/petekp/agent-skills.git",
-        "ref": "main",
-        "path": "skills/typography",
-        "include": ["SKILL.md", "references"]
-      },
-      "license": "MIT",
-      "allowLocalPatch": false
-    },
-    {
       "name": "motion-design",
       "source": {
         "type": "git",
@@ -111,6 +86,90 @@
         "ref": "main",
         "path": "skills/minimalist-skill",
         "include": ["SKILL.md"]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "better-interface",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/jakubkrehel/skills.git",
+        "ref": "main",
+        "path": "skills/better-interface",
+        "include": ["."]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "better-ui",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/jakubkrehel/skills.git",
+        "ref": "main",
+        "path": "skills/better-ui",
+        "include": ["."]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "better-typography",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/jakubkrehel/skills.git",
+        "ref": "main",
+        "path": "skills/better-typography",
+        "include": ["."]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "better-colors",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/jakubkrehel/skills.git",
+        "ref": "main",
+        "path": "skills/better-colors",
+        "include": ["."]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "better-accessibility",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/jakubkrehel/skills.git",
+        "ref": "main",
+        "path": "skills/better-accessibility",
+        "include": ["."]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "better-layout",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/jakubkrehel/skills.git",
+        "ref": "main",
+        "path": "skills/better-layout",
+        "include": ["."]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "better-writing",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/jakubkrehel/skills.git",
+        "ref": "main",
+        "path": "skills/better-writing",
+        "include": ["."]
       },
       "license": "MIT",
       "allowLocalPatch": false

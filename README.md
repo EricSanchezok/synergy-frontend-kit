@@ -28,20 +28,25 @@ synergy plugin add github:EricSanchezok/synergy-frontend-kit
 
 ### Skills
 
-The plugin exposes 10 bundled Agent Skills:
+The plugin exposes 15 bundled Agent Skills:
 
-| Skill                  | Purpose                                                      |
-| ---------------------- | ------------------------------------------------------------ |
-| `project-init`         | Self-diagnose and initialize missing frontend tooling        |
-| `frontend-design`      | Distinctive design methodology for new UI and redesigns      |
-| `taste-frontend`       | Anti-slop frontend guidance for landing pages and portfolios |
-| `color-expert`         | Color science, palettes, contrast, OKLCH, print/screen color |
-| `typography`           | Type systems, font loading, OpenType, i18n typography        |
-| `motion-design`        | UI motion principles, timing, easing, and choreography       |
-| `implementation-rules` | Deterministic anti-slop frontend coding rules                |
-| `a11y-audit`           | WCAG 2.1 AA audit workflow with scripts and reporting        |
-| `soft-design`          | Premium high-end visual design guidance                      |
-| `minimalist-design`    | Clean editorial/minimalist interface guidance                |
+| Skill                     | Purpose                                                      |
+| ------------------------- | ------------------------------------------------------------ |
+| `project-init`            | Self-diagnose and initialize missing frontend tooling        |
+| `frontend-design`         | Distinctive design methodology for new UI and redesigns      |
+| `taste-frontend`          | Anti-slop frontend guidance for landing pages and portfolios |
+| `motion-design`           | UI motion principles, timing, easing, and choreography       |
+| `implementation-rules`    | Deterministic anti-slop frontend coding rules                |
+| `a11y-audit`              | WCAG 2.1 AA audit workflow with scripts and reporting        |
+| `soft-design`             | Premium high-end visual design guidance                      |
+| `minimalist-design`       | Clean editorial/minimalist interface guidance                |
+| `better-interface`        | Cross-discipline interface review orchestration              |
+| `better-ui`               | Polish details: radius, shadows, icons, motion               |
+| `better-typography`       | Web typography from fonts to spacing and wrapping            |
+| `better-colors`           | OKLCH color space, palettes, contrast, theming               |
+| `better-accessibility`    | Focus, keyboard, ARIA, forms and screen readers              |
+| `better-layout`           | Layout structure, grouping, alignment and adaptivity         |
+| `better-writing`          | UX writing, interface copy and microcopy                     |
 
 ### MCP Servers
 
