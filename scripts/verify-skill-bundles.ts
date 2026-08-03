@@ -75,6 +75,7 @@ function cleanTarget(raw: string): string {
 
 function assertLocalTarget(file: string, skillRoot: string, raw: string) {
   if (!raw || raw.startsWith("#") || /^(https?|mailto|tel):/.test(raw)) return;
+  if (raw.includes("<") || raw.includes(">")) return;
   const target = cleanTarget(raw);
   if (
     !target ||
