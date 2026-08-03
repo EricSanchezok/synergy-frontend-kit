@@ -13,7 +13,7 @@ export { SKILL_ENTRIES } from "./skills";
 export const FrontendKitPlugin = definePlugin({
   id: "synergy-frontend-kit",
   name: "Synergy Frontend Kit",
-  version: "0.4.0",
+  version: "0.5.0",
   description:
     "Official frontend capability kit for Synergy agents: curated design skills, pinned MCP tooling, and setup automation.",
   compatibility: { synergy: ">=3.0.11" },

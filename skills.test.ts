@@ -66,7 +66,7 @@ describe("SKILL.md frontmatter", () => {
 
 test("Plugin API 4 definition contributes all skills in source order", () => {
   expect(FrontendKitPlugin).toMatchObject({
-    version: "0.4.0",
+    version: "0.5.0",
     compatibility: { synergy: ">=3.0.11" },
     capabilities: [{ id: "shell.execute" }],
   });
