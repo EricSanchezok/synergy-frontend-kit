@@ -1,0 +1,30 @@
+{
+  "schema_version": 2,
+  "rules": [
+    {
+      "name": "shared application shell",
+      "source_prefixes": [
+        "src/layouts",
+        "src/components/navigation"
+      ],
+      "groups": [
+        "*"
+      ]
+    },
+    {
+      "name": "article pages",
+      "source_prefixes": [
+        "src/pages/articles",
+        "src/templates/article"
+      ],
+      "groups": [
+        "articles/*"
+      ],
+      "direct_route": {
+        "source_prefix": "src/pages/articles",
+        "source_suffix": ".md",
+        "route_prefix": "/"
+      }
+    }
+  ]
+}

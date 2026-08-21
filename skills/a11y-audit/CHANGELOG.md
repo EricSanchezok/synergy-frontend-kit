@@ -1,14 +1,88 @@
 ---
 skill_bundle: a11y-audit
 file_role: reference
-version: 28
-version_date: 2026-07-21
-previous_version: 27
+version: 34
+version_date: 2026-08-09
+previous_version: 33
 change_summary: >
-  Records v2.5.2 dependency synchronization and assistant-guide v0.3.7.
+  Releases v2.7.0 with reviewed route grouping, direct changed-page selection,
+  consumer-Action execution, and conservative fallback evidence.
 ---
 
 # Changelog
+
+## v2.7.0 -- 2026-08-09
+
+- `scripts/discover.js`: accept reviewed route-group maps, prefer exact routes
+  over wildcard routes, publish complete discovery and grouping evidence, and
+  expand unsafe maps to one exact group per URL instead of reducing coverage.
+- `scripts/select-changed-surfaces.js`: accept schema-v2 source maps with
+  constrained direct changed-page transforms. Derived routes must resolve
+  uniquely to already discovered same-origin URLs; unresolved or ambiguous
+  routes and changed route-group maps retain the full representative sample.
+- Composite Action and starter: add `discover-group-map`, pass both reviewed
+  maps through discovery and selection, and retain existing evidence artifacts.
+- `references/route-grouping.md`, changed-surface reference v2, and example
+  maps: document the portable project-owned contracts without framework or
+  executable inference.
+- eval-20: exercise 316 flat URLs, exact-over-wildcard precedence, ambiguous
+  and incomplete map fallback, direct changed-page inclusion, global fallback,
+  changed-map fallback, and deterministic output.
+- Consumer Action fixture: execute a reviewed route-group map and schema-v2
+  direct route through the composite Action, then verify both discovery and
+  selection evidence in hosted CI.
+- Direct-route hardening: distinguish canonical-route ambiguity from ordinary
+  unresolved routes, reject unsafe origin and traversal configuration, and
+  cover nested paths plus `index` route normalization.
+- Documentation: distinguish route-group fallback over every discovered URL
+  from changed-surface fallback over the complete representative scan plan.
+- Assistant guide v0.3.10: re-pin the hardened selector executable while
+  retaining the existing authority and approval boundaries.
+- Package metadata, public surfaces, assistant guide, manifest, handoff, and
+  reusable Action pins are synchronized for the v2.7.0 release.
+
+## v2.6.1 -- 2026-08-09
+
+- Scanner lockfile: update transitive `js-yaml` from 4.3.0 to 4.3.1 within
+  Puppeteer's existing dependency range, resolving
+  `GHSA-5p4m-2wfm-xmqj` / `CVE-2026-59870` without changing the pinned
+  axe-core 4.12.1 or Puppeteer 24.43.1 releases.
+- Validation workflow and executable eval contract: run and retain a
+  high-severity npm advisory gate for both the
+  root validation graph and the separately locked scanner graph. This turns
+  advisory drift into a blocking hosted check instead of relying on release-
+  time manual validation.
+- Repository security controls: enable Dependabot vulnerability alerts and
+  automated security fixes, secret scanning and push protection, plus active
+  rulesets blocking deletion and history rewrites for `main` and `v*` tags.
+- `package.json`, `package-lock.json`, `MANIFEST.yaml`, `HANDOFF.md`, README,
+  website, Action starter, and executable eval contract: synchronize the
+  v2.6.1 release and correct post-release v2.6.0 roadmap language.
+
+## v2.6.0 -- 2026-08-04
+
+- `scripts/select-changed-surfaces.js` and `references/changed-surfaces.md`:
+  add explicit source-prefix ownership maps, deterministic group selection,
+  and evidence-backed full-sample fallback for every incomplete or unsafe
+  mapping condition.
+- `.github/actions/scan`, the workflow starter, and the consumer fixture:
+  accept changed-file or Git base/head inputs, preserve a selection plan, and
+  scan that plan only after the selector records a valid targeted result.
+- `evals/evals.json`, `evals/run-evals.js`, and eval-19 fixtures: cover
+  targeted, global, unmapped, invalid, unknown-group, and deterministic paths;
+  manifest validation now rejects embedded file-version drift.
+- `README.md`, `docs/index.html`, `llms.txt`, `docs/llms.txt`, `SKILL.md`,
+  `agents/openai.yaml`, and the Action example: document v2.6.0 adoption and
+  the explicit no-silent-scope-reduction contract.
+- `assistant-guide.txt` and its hosted copy: prepare v0.3.8 with current
+  discover, selector, and scanner executable hashes. The sidecar manifest is
+  synchronized to the hosted guide bytes and digest.
+- `package.json`, `package-lock.json`, `MANIFEST.yaml`, and `HANDOFF.md`:
+  synchronize the release candidate, bundle inventory, and field-validation
+  checklist. No tag, GitHub Release, or publication is implied by this entry.
+- Root and scanner lockfiles: retain the existing direct dependency pins while
+  updating compatible transitives to patched `fast-uri` 3.1.5 and `ip-address`
+  10.4.0 releases. Live npm audits report zero known vulnerabilities.
 
 ## v2.5.2 -- 2026-07-21
 
