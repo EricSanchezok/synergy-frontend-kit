@@ -28,7 +28,7 @@ synergy plugin add github:EricSanchezok/synergy-frontend-kit
 
 ### Skills
 
-The plugin exposes 15 bundled Agent Skills:
+The plugin exposes 23 bundled Agent Skills:
 
 | Skill                     | Purpose                                                      |
 | ------------------------- | ------------------------------------------------------------ |
@@ -47,6 +47,14 @@ The plugin exposes 15 bundled Agent Skills:
 | `better-accessibility`    | Focus, keyboard, ARIA, forms and screen readers              |
 | `better-layout`           | Layout structure, grouping, alignment and adaptivity         |
 | `better-writing`          | UX writing, interface copy and microcopy                     |
+| `gsap-core`               | Official GSAP core API: tweens, easing, stagger, defaults    |
+| `gsap-timeline`           | Sequencing, position parameter, labels, and playback         |
+| `gsap-scrolltrigger`      | Scroll-linked animation, pinning, scrub, triggers, refresh   |
+| `gsap-plugins`            | Flip, Draggable, SplitText, MorphSVG, Observer, and more     |
+| `gsap-utils`              | clamp, mapRange, normalize, random, snap, toArray helpers    |
+| `gsap-react`              | useGSAP hook, refs, context scoping, cleanup, SSR            |
+| `gsap-performance`        | Transforms, will-change, batching, ScrollTrigger tips        |
+| `gsap-frameworks`         | Vue, Svelte lifecycle, scoping selectors, cleanup on unmount |
 
 ### MCP Servers
 

@@ -173,6 +173,102 @@
       },
       "license": "MIT",
       "allowLocalPatch": false
+    },
+    {
+      "name": "gsap-core",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/greensock/gsap-skills.git",
+        "ref": "main",
+        "path": "skills/gsap-core",
+        "include": ["SKILL.md"]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "gsap-timeline",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/greensock/gsap-skills.git",
+        "ref": "main",
+        "path": "skills/gsap-timeline",
+        "include": ["SKILL.md"]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "gsap-scrolltrigger",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/greensock/gsap-skills.git",
+        "ref": "main",
+        "path": "skills/gsap-scrolltrigger",
+        "include": ["SKILL.md"]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "gsap-plugins",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/greensock/gsap-skills.git",
+        "ref": "main",
+        "path": "skills/gsap-plugins",
+        "include": ["SKILL.md"]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "gsap-utils",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/greensock/gsap-skills.git",
+        "ref": "main",
+        "path": "skills/gsap-utils",
+        "include": ["SKILL.md"]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "gsap-react",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/greensock/gsap-skills.git",
+        "ref": "main",
+        "path": "skills/gsap-react",
+        "include": ["SKILL.md"]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "gsap-performance",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/greensock/gsap-skills.git",
+        "ref": "main",
+        "path": "skills/gsap-performance",
+        "include": ["SKILL.md"]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "gsap-frameworks",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/greensock/gsap-skills.git",
+        "ref": "main",
+        "path": "skills/gsap-frameworks",
+        "include": ["SKILL.md"]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
     }
   ]
 }
