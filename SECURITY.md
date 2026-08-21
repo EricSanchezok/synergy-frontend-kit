@@ -50,6 +50,16 @@ bun run verify:skills
 
 Review any changed scripts under bundled skill directories before publishing.
 
+## Impeccable Skill Runtime
+
+The bundled `impeccable` skill (Apache-2.0, upstream `pbakaus/impeccable`) is an execution engine, not just documentation. Its bundled `scripts/` directory runs as Node.js code and can:
+
+- Execute on-demand design commands (context, detector, doctor, pin, hooks) that read and write project files such as PRODUCT.md, DESIGN.md, and surface briefs.
+- Make network calls to `https://impeccable.style/api` (concept seeding) and, only when the user provides an OpenAI key, `https://api.openai.com/v1/images/generations` for image generation.
+- Install an editor hook (`impeccable hooks on`) that runs the design detector after UI file edits.
+
+The scripts require Node `>=22.12`. They do not run automatically on skill load; they run only when the agent invokes an impeccable command. Agents should confirm with the user before running commands that modify project files, enable hooks, or make network calls.
+
 ## Reporting Issues
 
 Open a GitHub issue in the official repository:

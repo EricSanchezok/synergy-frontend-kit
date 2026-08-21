@@ -269,6 +269,18 @@
       },
       "license": "MIT",
       "allowLocalPatch": false
+    },
+    {
+      "name": "impeccable",
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/pbakaus/impeccable.git",
+        "ref": "main",
+        "path": ".agents/skills/impeccable",
+        "include": ["."]
+      },
+      "license": "Apache-2.0",
+      "allowLocalPatch": false
     }
   ]
 }

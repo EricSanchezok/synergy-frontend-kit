@@ -28,7 +28,7 @@ synergy plugin add github:EricSanchezok/synergy-frontend-kit
 
 ### Skills
 
-The plugin exposes 23 bundled Agent Skills:
+The plugin exposes 24 bundled Agent Skills:
 
 | Skill                     | Purpose                                                      |
 | ------------------------- | ------------------------------------------------------------ |
@@ -55,6 +55,7 @@ The plugin exposes 23 bundled Agent Skills:
 | `gsap-react`              | useGSAP hook, refs, context scoping, cleanup, SSR            |
 | `gsap-performance`        | Transforms, will-change, batching, ScrollTrigger tips        |
 | `gsap-frameworks`         | Vue, Svelte lifecycle, scoping selectors, cleanup on unmount |
+| `impeccable`              | Design execution engine: 23 commands, detector rules, hooks  |
 
 ### MCP Servers
 
