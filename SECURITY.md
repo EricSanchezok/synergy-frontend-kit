@@ -29,7 +29,8 @@ This can write files in the current project and download packages. Agents should
 
 ## MCP Servers
 
-MCP servers are lazy-started and version pinned:
+MCP servers are settings-gated, eager-started when enabled, shut down after an
+idle timeout, and version pinned:
 
 - `shadcn@4.11.0`
 - `@layoutdesign/context@0.15.3`

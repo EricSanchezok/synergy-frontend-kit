@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { parseSkillFrontmatter } from "./skill-frontmatter";
 
 interface SkillSource {
   name: string;
@@ -21,37 +22,11 @@ const SKILLS_DIR = join(ROOT, "skills");
 const SKILLS_TS = join(ROOT, "src", "skills.ts");
 const SOURCES_PATH = join(ROOT, "skills.sources.json");
 
-function parseDescription(frontmatter: string): string {
-  const lines = frontmatter.split("\n");
-  const index = lines.findIndex((line) => /^description:/.test(line));
-  if (index === -1) return "";
-  const afterColon = lines[index].replace(/^description:\s*/, "");
-  if (afterColon === ">" || afterColon === "|") {
-    const parts: string[] = [];
-    for (let current = index + 1; current < lines.length; current++) {
-      const line = lines[current];
-      if (!/^\s/.test(line)) break;
-      parts.push(line.trim());
-    }
-    return parts.join(" ").replace(/\s+/g, " ").trim();
-  }
-  return stripOuterQuotes(afterColon.trim());
-}
-
-function stripOuterQuotes(value: string): string {
-  if (value.length < 2) return value;
-  const first = value[0];
-  const last = value[value.length - 1];
-  return (first === `"` || first === "'") && first === last
-    ? value.slice(1, -1)
-    : value;
-}
-
 function extractDescription(path: string): string {
   const content = readFileSync(path, "utf-8");
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (!match) throw new Error(`No frontmatter in ${path}`);
-  return parseDescription(match[1]);
+  const description = parseSkillFrontmatter(content, path).description ?? "";
+  if (!description) throw new Error(`No description in ${path}`);
+  return description;
 }
 
 function renderSkillEntry(entry: SkillEntry): string {

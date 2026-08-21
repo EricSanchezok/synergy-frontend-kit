@@ -3,42 +3,40 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { FrontendKitPlugin, SKILL_ENTRIES } from "./src";
 import { renderSetupResult, runSetup, type SetupStepResult } from "./src/setup";
+import { parseSkillFrontmatter } from "./scripts/skill-frontmatter";
 
 interface SkillSource {
   name: string;
   aliases?: string[];
+  dependencies?: string[];
   licenseFiles?: string[];
+  source: {
+    type: "local" | "git";
+    repo?: string;
+    ref?: string;
+  };
 }
 
 interface SourcesFile {
   skills: SkillSource[];
 }
 
+interface SkillsLock {
+  schemaVersion: number;
+  sources: Record<string, { repo: string; ref: string; commit: string }>;
+}
+
 const ROOT = import.meta.dirname;
 const SKILLS_DIR = join(ROOT, "skills");
 const SOURCES_PATH = join(ROOT, "skills.sources.json");
+const LOCK_PATH = join(ROOT, "skills.lock.json");
 const sources = JSON.parse(readFileSync(SOURCES_PATH, "utf-8")) as SourcesFile;
+const sourceLock = JSON.parse(readFileSync(LOCK_PATH, "utf-8")) as SkillsLock;
 const expectedSkills = sources.skills.map((skill) => skill.name);
 
 function readFrontmatter(name: string): Record<string, string> {
   const content = readFileSync(join(SKILLS_DIR, name, "SKILL.md"), "utf-8");
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  expect(match, `${name}/SKILL.md must have YAML frontmatter`).not.toBeNull();
-  const result: Record<string, string> = {};
-  for (const rawLine of match?.[1].split("\n") ?? []) {
-    const field = rawLine
-      .replace(/\r$/, "")
-      .match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-    if (!field) continue;
-    const value = field[2].trim();
-    const first = value[0];
-    const last = value[value.length - 1];
-    result[field[1]] =
-      value.length >= 2 && (first === `"` || first === "'") && first === last
-        ? value.slice(1, -1)
-        : value;
-  }
-  return result;
+  return parseSkillFrontmatter(content, `${name}/SKILL.md`) as Record<string, string>;
 }
 
 test("all sourced skill directories exist", () => {
@@ -64,9 +62,49 @@ describe("SKILL.md frontmatter", () => {
   }
 });
 
+test("generated plugin descriptions match complete frontmatter descriptions", () => {
+  for (const entry of SKILL_ENTRIES) {
+    const frontmatter = readFrontmatter(entry.name);
+    expect(entry.description, `${entry.name} generated description`).toBe(
+      frontmatter.description,
+    );
+    expect(entry.description).not.toMatch(/^[>|][+-]?$/);
+  }
+});
+
+test("frontmatter parser supports YAML block scalar chomping indicators", () => {
+  const folded = parseSkillFrontmatter(`---\nname: folded\ndescription: >-\n  First line.\n  Second line.\n---\n`);
+  const literal = parseSkillFrontmatter(`---\nname: literal\ndescription: |-\n  First line.\n  Second line.\n---\n`);
+  expect(folded.description).toBe("First line. Second line.");
+  expect(literal.description).toBe("First line.\nSecond line.");
+});
+
+test("declared cross-skill dependencies are bundled", () => {
+  const bundled = new Set(expectedSkills);
+  for (const source of sources.skills) {
+    for (const dependency of source.dependencies ?? []) {
+      expect(bundled.has(dependency), `${source.name} -> ${dependency}`).toBe(true);
+    }
+  }
+});
+
+test("every tracked upstream source has exactly one immutable lock", () => {
+  expect(sourceLock.schemaVersion).toBe(1);
+  const expectedKeys = new Set(
+    sources.skills
+      .filter((source) => source.source.type === "git")
+      .map((source) => `${source.source.repo}#${source.source.ref ?? "HEAD"}`),
+  );
+  expect(new Set(Object.keys(sourceLock.sources))).toEqual(expectedKeys);
+  for (const [key, locked] of Object.entries(sourceLock.sources)) {
+    expect(locked.commit, key).toMatch(/^[0-9a-f]{40}$/);
+    expect(`${locked.repo}#${locked.ref}`).toBe(key);
+  }
+});
+
 test("Plugin API 4 definition contributes all skills in source order", () => {
   expect(FrontendKitPlugin).toMatchObject({
-    version: "0.7.0",
+    version: "0.7.1",
     compatibility: { synergy: ">=3.0.11" },
     capabilities: [{ id: "shell.execute" }],
   });

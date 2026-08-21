@@ -2,10 +2,17 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, normalize, relative } from "node:path";
 import { SKILL_ENTRIES } from "../src/skills";
+import { parseSkillFrontmatter } from "./skill-frontmatter";
 
 interface SkillSource {
   name: string;
   aliases?: string[];
+  dependencies?: string[];
+  source: {
+    type: "local" | "git";
+    repo?: string;
+    ref?: string;
+  };
   licenseFiles?: string[];
 }
 
@@ -13,41 +20,19 @@ interface SourcesFile {
   skills: SkillSource[];
 }
 
+interface SkillsLock {
+  schemaVersion: number;
+  sources: Record<string, { repo: string; ref: string; commit: string }>;
+}
+
 const ROOT = join(import.meta.dir, "..");
 const SKILLS_DIR = join(ROOT, "skills");
 const SOURCES_PATH = join(ROOT, "skills.sources.json");
+const LOCK_PATH = join(ROOT, "skills.lock.json");
 const failures: string[] = [];
 
 function fail(message: string) {
   failures.push(message);
-}
-
-function stripOuterQuotes(value: string): string {
-  if (value.length < 2) return value;
-  const first = value[0];
-  const last = value[value.length - 1];
-  return (first === `"` || first === "'") && first === last
-    ? value.slice(1, -1)
-    : value;
-}
-
-function parseFrontmatter(
-  content: string,
-  file: string,
-): Record<string, string> {
-  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (!match) {
-    fail(`${file}: missing YAML frontmatter`);
-    return {};
-  }
-  const fields: Record<string, string> = {};
-  for (const rawLine of match[1].split("\n")) {
-    const field = rawLine
-      .replace(/\r$/, "")
-      .match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-    if (field) fields[field[1]] = stripOuterQuotes(field[2].trim());
-  }
-  return fields;
 }
 
 function collectMarkdownFiles(dir: string): string[] {
@@ -113,8 +98,16 @@ function verifyMarkdownLinks(file: string, skillRoot: string) {
 }
 
 const sources = JSON.parse(readFileSync(SOURCES_PATH, "utf-8")) as SourcesFile;
+const sourceLock = existsSync(LOCK_PATH)
+  ? JSON.parse(readFileSync(LOCK_PATH, "utf-8")) as SkillsLock
+  : undefined;
 const expectedNames = sources.skills.map((source) => source.name);
 const expectedSet = new Set(expectedNames);
+const expectedLockKeys = new Set(
+  sources.skills
+    .filter((source) => source.source.type === "git")
+    .map((source) => `${source.source.repo}#${source.source.ref ?? "HEAD"}`),
+);
 const definitionNames = SKILL_ENTRIES.map((entry) => entry.name);
 if (JSON.stringify(definitionNames) !== JSON.stringify(expectedNames)) {
   fail(
@@ -133,7 +126,7 @@ for (const source of sources.skills) {
     fail(`${source.name}: missing SKILL.md`);
     continue;
   }
-  const frontmatter = parseFrontmatter(
+  const frontmatter = parseSkillFrontmatter(
     readFileSync(skillMd, "utf-8"),
     relative(ROOT, skillMd),
   );
@@ -147,8 +140,27 @@ for (const source of sources.skills) {
     if (!existsSync(join(skillDir, licenseFile)))
       fail(`${source.name}: missing declared license file ${licenseFile}`);
   }
+  for (const dependency of source.dependencies ?? []) {
+    if (!expectedSet.has(dependency))
+      fail(`${source.name}: missing declared skill dependency ${dependency}`);
+  }
+  if (source.source.type === "git") {
+    const ref = source.source.ref ?? "HEAD";
+    const key = `${source.source.repo}#${ref}`;
+    const locked = sourceLock?.sources[key];
+    if (!locked || !/^[0-9a-f]{40}$/.test(locked.commit))
+      fail(`${source.name}: missing immutable source lock for ${key}`);
+    else if (`${locked.repo}#${locked.ref}` !== key)
+      fail(`${source.name}: source lock identity mismatch for ${key}`);
+  }
   for (const markdown of collectMarkdownFiles(skillDir))
     verifyMarkdownLinks(markdown, skillDir);
+}
+
+if (sourceLock?.schemaVersion !== 1)
+  fail("skills.lock.json: schemaVersion must be 1");
+for (const key of Object.keys(sourceLock?.sources ?? {})) {
+  if (!expectedLockKeys.has(key)) fail(`skills.lock.json: stale source ${key}`);
 }
 
 for (const entry of readdirSync(SKILLS_DIR, { withFileTypes: true })) {

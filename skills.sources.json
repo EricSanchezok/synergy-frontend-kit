@@ -92,11 +92,33 @@
     },
     {
       "name": "better-interface",
+      "dependencies": [
+        "interface-review",
+        "better-accessibility",
+        "better-layout",
+        "better-writing",
+        "better-typography",
+        "better-colors",
+        "better-ui"
+      ],
       "source": {
         "type": "git",
         "repo": "https://github.com/jakubkrehel/skills.git",
         "ref": "main",
         "path": "skills/better-interface",
+        "include": ["."]
+      },
+      "license": "MIT",
+      "allowLocalPatch": false
+    },
+    {
+      "name": "interface-review",
+      "dependencies": ["better-interface"],
+      "source": {
+        "type": "git",
+        "repo": "https://github.com/jakubkrehel/skills.git",
+        "ref": "main",
+        "path": "skills/interface-review",
         "include": ["."]
       },
       "license": "MIT",

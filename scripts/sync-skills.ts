@@ -25,6 +25,7 @@ interface SourceFile {
 interface SkillSource {
   name: string
   aliases?: string[]
+  dependencies?: string[]
   source: SourceFile
   license?: string
   licenseFiles?: string[]
@@ -36,6 +37,18 @@ interface SourcesFile {
   skills: SkillSource[]
 }
 
+interface LockedSource {
+  repo: string
+  ref: string
+  commit: string
+}
+
+interface SkillsLock {
+  schemaVersion: number
+  generatedAt: string
+  sources: Record<string, LockedSource>
+}
+
 interface DiffSummary {
   added: number
   modified: number
@@ -45,11 +58,14 @@ interface DiffSummary {
 const ROOT = join(import.meta.dir, "..")
 const SKILLS_DIR = join(ROOT, "skills")
 const SOURCES_PATH = join(ROOT, "skills.sources.json")
+const LOCK_PATH = join(ROOT, "skills.lock.json")
 const args = new Set(process.argv.slice(2))
 const dryRun = args.has("--dry-run")
 const quiet = args.has("--quiet")
+const refreshLock = args.has("--refresh-lock")
 const tempDir = mkdtempSync(join(tmpdir(), "synergy-frontend-kit-sync-"))
 const repoCache = new Map<string, string>()
+const resolvedSourceCache = new Map<string, LockedSource>()
 
 function log(message: string) {
   if (!quiet) console.log(message)
@@ -59,40 +75,100 @@ function readSources(): SourcesFile {
   return JSON.parse(readFileSync(SOURCES_PATH, "utf-8")) as SourcesFile
 }
 
-function run(command: string[], cwd = ROOT) {
-  const result = spawnSync(command[0], command.slice(1), {
-    cwd,
-    encoding: "utf-8",
-    stdio: ["ignore", "pipe", "pipe"],
-  })
-
-  if (result.status !== 0) {
-    throw new Error(`${command.join(" ")}\n${result.stderr.trim() || result.stdout.trim()}`)
+function readLock(): SkillsLock {
+  if (!existsSync(LOCK_PATH)) {
+    return { schemaVersion: 1, generatedAt: "", sources: {} }
   }
+  return JSON.parse(readFileSync(LOCK_PATH, "utf-8")) as SkillsLock
+}
 
-  return result.stdout.trim()
+const sourceLock = readLock()
+const nextLockedSources: Record<string, LockedSource> = refreshLock
+  ? {}
+  : { ...sourceLock.sources }
+
+function run(command: string[], cwd = ROOT, attempts = 1) {
+  let lastError = ""
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    const result = spawnSync(command[0], command.slice(1), {
+      cwd,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+    })
+    if (result.status === 0) return result.stdout.trim()
+    lastError = result.stderr.trim() || result.stdout.trim()
+    if (attempt < attempts) log(`  retrying network operation (${attempt + 1}/${attempts})`)
+  }
+  throw new Error(`${command.join(" ")}\n${lastError}`)
+}
+
+function sourceKey(source: SourceFile): string {
+  if (!source.repo) throw new Error("git source is missing repo")
+  return `${source.repo}#${source.ref ?? "HEAD"}`
+}
+
+function resolveRemoteCommit(source: SourceFile): string {
+  if (!source.repo) throw new Error("git source is missing repo")
+  const ref = source.ref ?? "HEAD"
+  const candidates = ref === "HEAD"
+    ? ["HEAD"]
+    : [`refs/heads/${ref}`, `refs/tags/${ref}^{}`, `refs/tags/${ref}`, ref]
+  const output = run(
+    ["git", "-c", "http.version=HTTP/1.1", "ls-remote", source.repo, ...candidates],
+    ROOT,
+    3,
+  )
+  const entries = output
+    .split("\n")
+    .map((line) => line.trim().split(/\s+/, 2))
+    .filter(([commit, name]) => /^[0-9a-f]{40}$/.test(commit) && Boolean(name))
+  const preferred = entries.find(([, name]) => name === `refs/heads/${ref}`)
+    ?? entries.find(([, name]) => name === `refs/tags/${ref}^{}`)
+    ?? entries.find(([, name]) => name === `refs/tags/${ref}`)
+    ?? entries[0]
+  if (!preferred) throw new Error(`Unable to resolve ${source.repo}#${ref}`)
+  return preferred[0]
+}
+
+function resolveLockedSource(source: SourceFile): LockedSource {
+  if (!source.repo) throw new Error("git source is missing repo")
+  const key = sourceKey(source)
+  const cached = resolvedSourceCache.get(key)
+  if (cached) return cached
+  const ref = source.ref ?? "HEAD"
+  if (refreshLock) {
+    const locked = { repo: source.repo, ref, commit: resolveRemoteCommit(source) }
+    nextLockedSources[key] = locked
+    resolvedSourceCache.set(key, locked)
+    return locked
+  }
+  const locked = sourceLock.sources[key]
+  if (!locked || !/^[0-9a-f]{40}$/.test(locked.commit)) {
+    throw new Error(`Missing locked commit for ${key}; run bash scripts/update.sh`)
+  }
+  resolvedSourceCache.set(key, locked)
+  return locked
 }
 
 function cloneRepo(source: SourceFile): string {
   if (!source.repo) throw new Error("git source is missing repo")
 
-  const ref = source.ref ?? "HEAD"
-  const cacheKey = `${source.repo}#${ref}`
+  const locked = resolveLockedSource(source)
+  const cacheKey = `${source.repo}#${locked.commit}`
   const cached = repoCache.get(cacheKey)
   if (cached) return cached
 
   const repoName = basename(source.repo.replace(/\.git$/, ""))
   const checkout = join(tempDir, `${repoName}-${repoCache.size}`)
 
-  try {
-    run(["git", "clone", "--depth", "1", "--quiet", "--branch", ref, source.repo, checkout])
-  } catch {
-    run(["git", "clone", "--depth", "1", "--quiet", source.repo, checkout])
-    if (ref !== "HEAD") {
-      run(["git", "fetch", "--depth", "1", "origin", ref], checkout)
-      run(["git", "checkout", "--quiet", "FETCH_HEAD"], checkout)
-    }
-  }
+  run(["git", "init", "--quiet", checkout])
+  run(["git", "remote", "add", "origin", source.repo], checkout)
+  run(
+    ["git", "-c", "http.version=HTTP/1.1", "fetch", "--depth", "1", "--quiet", "origin", locked.commit],
+    checkout,
+    3,
+  )
+  run(["git", "checkout", "--quiet", "FETCH_HEAD"], checkout)
 
   repoCache.set(cacheKey, checkout)
   return checkout
@@ -130,7 +206,34 @@ function normalizeSkillFrontmatter(skillDir: string, targetName: string) {
   }
 
   const frontmatter = match[1]
-  const normalizedFrontmatter = frontmatter.replace(/^name:\s*.+$/m, `name: ${targetName}`)
+  const explicitOnly = /^disable-model-invocation:\s*true\s*$/m.test(frontmatter)
+  let normalizedFrontmatter = frontmatter
+    .replace(/^name:\s*.+$/m, `name: ${targetName}`)
+    .replace(/^disable-model-invocation:\s*(?:true|false)\s*\r?\n?/m, "")
+
+  const topLevelVersion = normalizedFrontmatter.match(/^version:\s*(.+)\s*$/m)
+  if (topLevelVersion) {
+    if (/^metadata:\s*$/m.test(normalizedFrontmatter)) {
+      normalizedFrontmatter = normalizedFrontmatter
+        .replace(/^version:\s*.+\s*\r?\n?/m, "")
+        .replace(/^metadata:\s*$/m, `metadata:\n  version: ${topLevelVersion[1]}`)
+    } else {
+      normalizedFrontmatter = normalizedFrontmatter.replace(
+        /^version:\s*.+\s*$/m,
+        `metadata:\n  version: ${topLevelVersion[1]}`,
+      )
+    }
+  }
+
+  if (explicitOnly) {
+    const openAiPath = join(skillDir, "agents", "openai.yaml")
+    const openAi = existsSync(openAiPath) ? readFileSync(openAiPath, "utf-8") : ""
+    if (!/^\s*allow_implicit_invocation:\s*false\s*$/m.test(openAi)) {
+      throw new Error(
+        `${targetName}: disable-model-invocation requires agents/openai.yaml policy.allow_implicit_invocation: false`,
+      )
+    }
+  }
   if (frontmatter === normalizedFrontmatter) return
 
   writeFileSync(
@@ -271,3 +374,20 @@ if (dryRun) {
 }
 
 if (failed > 0) process.exit(1)
+
+if (refreshLock && !dryRun) {
+  const sortedSources = Object.fromEntries(
+    Object.entries(nextLockedSources).sort(([left], [right]) => left.localeCompare(right)),
+  )
+  const previousSources = JSON.stringify(sourceLock.sources)
+  const nextSources = JSON.stringify(sortedSources)
+  const lock: SkillsLock = {
+    schemaVersion: 1,
+    generatedAt: previousSources === nextSources && sourceLock.generatedAt
+      ? sourceLock.generatedAt
+      : new Date().toISOString(),
+    sources: sortedSources,
+  }
+  writeFileSync(LOCK_PATH, `${JSON.stringify(lock, null, 2)}\n`, "utf-8")
+  log(`Updated ${relative(ROOT, LOCK_PATH)}`)
+}

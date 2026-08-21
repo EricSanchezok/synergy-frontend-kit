@@ -5,7 +5,7 @@ export const SKILL_ENTRIES: PluginSkill[] = [
   {
     name: "project-init",
     description:
-      "Teaches the agent to self-diagnose and auto-initialize frontend tooling before starting design work. Use when starting a new frontend project or when MCP tools return errors indicating missing configuration. Triggers: 'new project', 'init', 'setup', 'MCP error', 'tool not available'.",
+      "Diagnose and initialize frontend tooling before design work. Use when starting a new frontend project or when MCP tools report missing configuration. Triggers include new project, initialization, setup, MCP errors, and unavailable tools.",
     dir: "skills/project-init",
   },
   {
@@ -29,7 +29,7 @@ export const SKILL_ENTRIES: PluginSkill[] = [
   {
     name: "implementation-rules",
     description:
-      "Deterministic coding rules to prevent AI-generated frontend anti-patterns. Covers color palettes, typography, layout structure, spacing, motion, and accessibility — 24 concrete DO/DON'T rules. Use when writing any frontend code — these are standing orders, not situational guidance. Triggers: 'CSS', 'style', 'component', 'layout', 'Tailwind', 'animation', 'font', 'color', 'spacing', 'accessibility'.",
+      "Baseline coding rules for preventing common AI-generated frontend anti-patterns. Covers color palettes, typography, layout structure, spacing, motion, and accessibility, while preserving explicit briefs and established design systems. Use when writing frontend code. Triggers include CSS, styling, components, layout, Tailwind, animation, fonts, color, spacing, and accessibility.",
     dir: "skills/implementation-rules",
   },
   {
@@ -53,8 +53,14 @@ export const SKILL_ENTRIES: PluginSkill[] = [
   {
     name: "better-interface",
     description:
-      ">-",
+      "Cross-discipline interface review. Routes a screen, flow, or feature to every `better-*` domain skill and consolidates one ranked verdict. Use when asked for a holistic review rather than a single domain and when `interface-review` hands up a change to route. Triggers on better-interface, holistic interface review, review the whole screen.",
     dir: "skills/better-interface",
+  },
+  {
+    name: "interface-review",
+    description:
+      "Interface review of a change rather than a screen: uncommitted work, the current branch, or a pull request. Covers interface quality, not correctness, tests, or security.",
+    dir: "skills/interface-review",
   },
   {
     name: "better-ui",
@@ -89,7 +95,7 @@ export const SKILL_ENTRIES: PluginSkill[] = [
   {
     name: "better-writing",
     description:
-      ">-",
+      "UX writing and interface copy. Use when writing or reviewing any user-facing text. Triggers on UX writing, microcopy, button labels, link text, error messages, empty states, placeholder text, settings labels, capitalization, sentence case, voice and tone.",
     dir: "skills/better-writing",
   },
   {

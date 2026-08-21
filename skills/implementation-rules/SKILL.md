@@ -1,11 +1,27 @@
 ---
 name: implementation-rules
-description: Deterministic coding rules to prevent AI-generated frontend anti-patterns. Covers color palettes, typography, layout structure, spacing, motion, and accessibility — 24 concrete DO/DON'T rules. Use when writing any frontend code — these are standing orders, not situational guidance. Triggers: 'CSS', 'style', 'component', 'layout', 'Tailwind', 'animation', 'font', 'color', 'spacing', 'accessibility'.
+description: >-
+  Baseline coding rules for preventing common AI-generated frontend anti-patterns.
+  Covers color palettes, typography, layout structure, spacing, motion, and
+  accessibility, while preserving explicit briefs and established design systems.
+  Use when writing frontend code. Triggers include CSS, styling, components,
+  layout, Tailwind, animation, fonts, color, spacing, and accessibility.
 ---
 
 # Implementation Rules
 
-These are standing coding rules — apply them to every frontend change, not just new pages.
+Apply these baseline rules to every frontend change, not just new pages.
+
+## Precedence and rule types
+
+When guidance conflicts, follow this order:
+
+1. The user's explicit request and binding brand requirements.
+2. The project's established design system, tokens, and documented conventions.
+3. A deliberately selected style skill or preset for the current surface.
+4. The defaults in this file.
+
+Accessibility, content reachability, responsive flow, and interaction correctness remain requirements. The aesthetic anti-defaults in Color, Typography, and Layout are overridable heuristics: they prevent accidental template choices, but they must not erase an intentional warm palette, single-family type system, branded gradient, or other justified direction. When an override is deliberate, keep it consistent and verify the resulting implementation instead of silently fighting it.
 
 ## Color
 
