@@ -28,7 +28,7 @@ synergy plugin add github:EricSanchezok/synergy-frontend-kit
 
 ### Skills
 
-The plugin exposes 24 bundled Agent Skills:
+The plugin exposes 25 bundled Agent Skills:
 
 | Skill                     | Purpose                                                      |
 | ------------------------- | ------------------------------------------------------------ |
@@ -41,6 +41,7 @@ The plugin exposes 24 bundled Agent Skills:
 | `soft-design`             | Premium high-end visual design guidance                      |
 | `minimalist-design`       | Clean editorial/minimalist interface guidance                |
 | `better-interface`        | Cross-discipline interface review orchestration              |
+| `interface-review`        | Change-scoped UI review for branches, PRs, and working trees |
 | `better-ui`               | Polish details: radius, shadows, icons, motion               |
 | `better-typography`       | Web typography from fonts to spacing and wrapping            |
 | `better-colors`           | OKLCH color space, palettes, contrast, theming               |
@@ -114,15 +115,16 @@ bash scripts/update.sh --dry-run
 bash scripts/update.sh
 ```
 
-The sync source of truth is `skills.sources.json`. It records each upstream repo, ref, bundle path, included files, license files, aliases, and local patch policy.
+The sync source of truth is `skills.sources.json`. It records each upstream repo, ref, bundle path, included files, license files, aliases, dependencies, and local patch policy. `skills.lock.json` records the exact upstream commit for every tracked repo/ref so a checkout remains reproducible after an upstream branch moves.
 
 The sync command:
 
-1. Clones upstream repositories.
-2. Copies full skill bundles, including references, scripts, assets, and licenses.
-3. Normalizes public skill names to this plugin's stable names.
-4. Syncs descriptions into the typed Plugin API 4 definition in `src/skills.ts`.
-5. Runs bundle verification.
+1. Resolves tracked upstream refs and refreshes `skills.lock.json`.
+2. Checks out the locked commits.
+3. Copies full skill bundles, including references, scripts, assets, and licenses.
+4. Normalizes public skill names to this plugin's stable names.
+5. Syncs complete YAML descriptions into the typed Plugin API 4 definition in `src/skills.ts`.
+6. Runs bundle, dependency, and source-lock verification.
 
 ## Verification
 

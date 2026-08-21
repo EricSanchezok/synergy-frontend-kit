@@ -50,7 +50,9 @@ bun run release:check
 Inspect the tarball:
 
 ```bash
-tar -tzf synergy-frontend-kit-0.4.0.synergy-plugin.tgz | sort
+PLUGIN_VERSION="$(bun -p 'require("./package.json").version')"
+PLUGIN_ARCHIVE="synergy-frontend-kit-${PLUGIN_VERSION}.synergy-plugin.tgz"
+tar -tzf "$PLUGIN_ARCHIVE" | sort
 ```
 
 Required package files:
@@ -58,7 +60,6 @@ Required package files:
 ```text
 plugin.json
 runtime/index.js
-ui/index.js
 integrity.json
 permissions.summary.json
 skills/
@@ -77,7 +78,9 @@ synergy-plugin publish-market \
 To use a prebuilt tarball instead of rebuilding:
 
 ```bash
-synergy-plugin publish-market synergy-frontend-kit-0.4.0.synergy-plugin.tgz \
+PLUGIN_VERSION="$(bun -p 'require("./package.json").version')"
+PLUGIN_ARCHIVE="synergy-frontend-kit-${PLUGIN_VERSION}.synergy-plugin.tgz"
+synergy-plugin publish-market "$PLUGIN_ARCHIVE" \
   --repo https://github.com/EricSanchezok/synergy-frontend-kit \
   --changelog "Release notes for this version"
 ```
@@ -111,16 +114,18 @@ Use this path only when release upload, registry checkout, push, or PR creation 
 Sign the package:
 
 ```bash
-synergy-plugin sign synergy-frontend-kit-0.4.0.synergy-plugin.tgz
+PLUGIN_VERSION="$(bun -p 'require("./package.json").version')"
+PLUGIN_ARCHIVE="synergy-frontend-kit-${PLUGIN_VERSION}.synergy-plugin.tgz"
+synergy-plugin sign "$PLUGIN_ARCHIVE"
 ```
 
 This creates:
 
 ```text
-synergy-frontend-kit-0.4.0.synergy-plugin.tgz.sig
+$PLUGIN_ARCHIVE.sig
 ```
 
-Create a release tagged `v0.4.0` in:
+Create a release whose `v<version>` tag matches `package.json` in:
 
 ```text
 https://github.com/EricSanchezok/synergy-frontend-kit
@@ -129,14 +134,14 @@ https://github.com/EricSanchezok/synergy-frontend-kit
 Upload both assets:
 
 ```text
-synergy-frontend-kit-0.4.0.synergy-plugin.tgz
-synergy-frontend-kit-0.4.0.synergy-plugin.tgz.sig
+$PLUGIN_ARCHIVE
+$PLUGIN_ARCHIVE.sig
 ```
 
 From a checkout of `SII-Holos/synergy-plugins` adjacent to this repository:
 
 ```bash
-synergy-plugin entry synergy-frontend-kit-0.4.0.synergy-plugin.tgz \
+synergy-plugin entry "$PLUGIN_ARCHIVE" \
   --repo https://github.com/EricSanchezok/synergy-frontend-kit \
   --verified \
   --official \
@@ -169,20 +174,20 @@ The official registry entry and package must satisfy:
 - the release uploads include both the tarball and `<tarball>.sig`
 - the registry entry contains `compatibility.synergy` matching `plugin.json` `compatibility.synergy`
 - the registry version contains `apiVersion`, `compatibility`, `downloadUrl`, `signatureUrl`, `signature.algorithm: "ed25519"`, `signature.signer`, `integrity`, `manifestHash`, `permissionsHash`, `runtimeMode`, `featuresSummary`, `permissionsSummary`, `tools`, `uiSurfaces`, and `publishedAt`
-- the tarball contains `plugin.json`, `runtime/index.js`, `integrity.json`, `permissions.summary.json`, `ui/index.js`, and full `skills/`
+- the tarball contains `plugin.json`, `runtime/index.js`, `integrity.json`, `permissions.summary.json`, and full `skills/`; `ui/index.js` is required only when the plugin contributes a custom UI bundle
 
 ## 6. Local Smoke Test
 
 Before the registry PR merges, test the local registry UX:
 
 ```bash
-synergy plugin publish synergy-frontend-kit-0.4.0.synergy-plugin.tgz
+synergy plugin publish "$PLUGIN_ARCHIVE"
 ```
 
 Also install directly from the tarball:
 
 ```bash
-synergy plugin add file:///absolute/path/to/synergy-frontend-kit-0.4.0.synergy-plugin.tgz
+synergy plugin add "file:///absolute/path/to/$PLUGIN_ARCHIVE"
 ```
 
 After the registry PR merges, verify marketplace install:
@@ -197,4 +202,4 @@ Confirm:
 - skills load
 - `synergy synergy-frontend-kit setup --dry-run --json` works
 - settings section renders
-- MCP servers remain lazy until used
+- enabled MCP servers start automatically and shut down after their idle timeout

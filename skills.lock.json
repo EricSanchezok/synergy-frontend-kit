@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-21T12:27:44.664Z",
+  "sources": {
+    "https://github.com/anthropics/skills.git#main": {
+      "repo": "https://github.com/anthropics/skills.git",
+      "ref": "main",
+      "commit": "0a64e398ec6bb34a494f0c347e8ccae53a862f8e"
+    },
+    "https://github.com/greensock/gsap-skills.git#main": {
+      "repo": "https://github.com/greensock/gsap-skills.git",
+      "ref": "main",
+      "commit": "aed9cfd3277740755f6bfc1155c7aa645403b760"
+    },
+    "https://github.com/jakubkrehel/skills.git#main": {
+      "repo": "https://github.com/jakubkrehel/skills.git",
+      "ref": "main",
+      "commit": "6c43b20ce00f720eed854591abe480127629c191"
+    },
+    "https://github.com/Leonxlnx/taste-skill.git#main": {
+      "repo": "https://github.com/Leonxlnx/taste-skill.git",
+      "ref": "main",
+      "commit": "c607b117f37df9ce35e335b543972ca8353f327f"
+    },
+    "https://github.com/LottieFiles/motion-design-skill.git#main": {
+      "repo": "https://github.com/LottieFiles/motion-design-skill.git",
+      "ref": "main",
+      "commit": "f9a8a041b85185ee4881b3471d3415e939aac772"
+    },
+    "https://github.com/pbakaus/impeccable.git#main": {
+      "repo": "https://github.com/pbakaus/impeccable.git",
+      "ref": "main",
+      "commit": "f88b2837a7d7c3182e46307bbbb091a1ed547571"
+    },
+    "https://github.com/snapsynapse/skill-a11y-audit.git#main": {
+      "repo": "https://github.com/snapsynapse/skill-a11y-audit.git",
+      "ref": "main",
+      "commit": "8361379dc286fcef5d46dd1873b6cb7d31230161"
+    }
+  }
+}

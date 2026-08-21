@@ -1,6 +1,10 @@
 ---
 name: project-init
-description: Teaches the agent to self-diagnose and auto-initialize frontend tooling before starting design work. Use when starting a new frontend project or when MCP tools return errors indicating missing configuration. Triggers: 'new project', 'init', 'setup', 'MCP error', 'tool not available'.
+description: >-
+  Diagnose and initialize frontend tooling before design work. Use when starting
+  a new frontend project or when MCP tools report missing configuration.
+  Triggers include new project, initialization, setup, MCP errors, and unavailable
+  tools.
 ---
 
 # Project Init

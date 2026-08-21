@@ -19,7 +19,7 @@ for arg in "$@"; do
   esac
 done
 
-SYNC_ARGS=()
+SYNC_ARGS=(--refresh-lock)
 if $DRY_RUN; then
   SYNC_ARGS+=(--dry-run)
 fi
